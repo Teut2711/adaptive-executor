@@ -68,17 +68,6 @@ jobs:
     - name: Run type checking with mypy
       run: |
         mypy adaptive_executor
-    
-    - name: Auto-format with Black and isort (if needed)
-      if: failure()
-      run: |
-        black .
-        isort .
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add .
-        git commit -m "Auto-format with Black and isort" || exit 0
-        git push
 
   docs:
     runs-on: ubuntu-latest

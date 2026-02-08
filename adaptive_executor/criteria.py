@@ -1,4 +1,4 @@
-
+import datetime
 import importlib.util
 import json
 from typing import List, Tuple, Dict, Any
@@ -31,49 +31,77 @@ class ScalingCriterion:
 class TimeCriterion(ScalingCriterion):
     def __init__(
         self,
-        workers: int,
-        time_start: int,
-        time_end: int,
-        tz: str = "UTC",
+        worker_count: int,
+        active_start: datetime.datetime,
+        active_end: datetime.datetime,
+        timezone: str = "UTC",
     ):
         if not importlib.util.find_spec("pytz"):
             raise ImportError("TimeCriterion requires 'pytz' package. Install with: pip install adaptive-executor[time]")
         
-        if not (0 <= time_start <= 23) or not (0 <= time_end <= 23):
-            raise ValueError("time_start and time_end must be between 0 and 23")
-        
-        if workers < 1:
-            raise ValueError("workers must be at least 1")
-        
         import pytz
-        self.workers = workers
-        self.time_start = time_start
-        self.time_end = time_end
-        self.tz = pytz.timezone(tz)
-
+        
+        # Validate worker_count
+        if not isinstance(worker_count, int) or worker_count < 1:
+            raise ValueError("worker_count must be at least 1")
+        
+        # Validate active_start
+        if not isinstance(active_start, datetime.datetime):
+            raise TypeError("active_start must be a datetime.datetime instance")
+        
+        # Validate active_end
+        if not isinstance(active_end, datetime.datetime):
+            raise TypeError("active_end must be a datetime.datetime instance")
+        
+        # Extract hours and validate range
+        self.time_start = active_start.hour
+        self.time_end = active_end.hour
+        
+        if not (0 <= self.time_start <= 23):
+            raise ValueError("active_start hour must be between 0 and 23")
+        if not (0 <= self.time_end <= 23):
+            raise ValueError("active_end hour must be between 0 and 23")
+        
+        self.worker_count = worker_count
+        self.tz = pytz.timezone(timezone)
+       
     def max_workers(self) -> int:
-        from datetime import datetime
-        h = datetime.now(self.tz).hour
-        if h >= self.time_start or h < self.time_end:
-            return self.workers
+        now = datetime.datetime.now(self.tz)
+        current_hour = now.hour
+        
+        # Check if current time is within the active window
+        # The window wraps around midnight, so we check different cases
+        if self.time_start <= self.time_end:
+            # Normal range (e.g., 9-17)
+            if self.time_start <= current_hour < self.time_end:
+                return self.worker_count
+        else:
+            # Wraps around midnight (e.g., 22-3)
+            if current_hour >= self.time_start or current_hour < self.time_end:
+                return self.worker_count
+        
         return 1  # Minimum workers outside time range
     
     def to_dict(self) -> Dict[str, Any]:
         return {
             "type": "TimeCriterion",
-            "workers": self.workers,
-            "time_start": self.time_start,
-            "time_end": self.time_end,
-            "tz": self.tz.zone
+            "worker_count": self.worker_count,
+            "active_start": self.time_start,
+            "active_end": self.time_end,
+            "timezone": self.tz.zone
         }
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TimeCriterion":
+        # Convert integer hours to datetime.datetime objects
+        start_hour = data["active_start"]
+        end_hour = data["active_end"]
+        
         return cls(
-            workers=data["workers"],
-            time_start=data["time_start"],
-            time_end=data["time_end"],
-            tz=data["tz"]
+            worker_count=data["worker_count"],
+            active_start=datetime.datetime(2024, 1, 1, start_hour, 0),
+            active_end=datetime.datetime(2024, 1, 1, end_hour, 0),
+            timezone=data["timezone"]
         )
 
 
