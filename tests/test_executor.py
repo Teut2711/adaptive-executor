@@ -1,252 +1,218 @@
 import time
 import threading
 import signal
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
+import pytest
 
 from adaptive_executor.executor import AdaptiveExecutor
 from adaptive_executor.policies import MultiCriterionPolicy
 
 
-class TestAdaptiveExecutor:
-    def test_initialization(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 5
+def test_initialization(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 5
 
-        executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
+    executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
 
-        try:
-            assert executor.max_workers == 10
-            assert executor.policy == mock_policy
-            assert executor.check_interval == 60
-            assert executor.current_limit == 5
-            assert executor.shutdown_flag is False
-        finally:
-            executor.shutdown()
-            executor.join()
+    assert executor.max_workers == 10
+    assert executor.policy == mock_policy
+    assert executor.check_interval == 60
+    assert executor.current_limit == 5
+    assert executor.shutdown_flag is False
 
-    def test_initialization_with_custom_check_interval(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 3
+    executor.shutdown()
+    executor.join()
 
-        executor = AdaptiveExecutor(
-            max_workers=8, policy=mock_policy, check_interval=30
-        )
 
-        try:
-            assert executor.check_interval == 30
-        finally:
-            executor.shutdown()
-            executor.join()
+def test_initialization_with_custom_check_interval(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 3
 
-    def test_set_limit_increase(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 3
+    executor = AdaptiveExecutor(
+        max_workers=8, policy=mock_policy, check_interval=30
+    )
 
-        executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
+    assert executor.check_interval == 30
 
-        try:
-            executor._set_limit(7)
-            assert executor.current_limit == 7
-        finally:
-            executor.shutdown()
-            executor.join()
+    executor.shutdown()
+    executor.join()
 
-    def test_set_limit_decrease(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 7
 
-        executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
+def test_set_limit_increase(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 3
 
-        try:
-            executor._set_limit(3)
-            assert executor.current_limit == 3
-        finally:
-            executor.shutdown()
-            executor.join()
+    executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
 
-    def test_set_limit_respects_max_workers(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 5
+    executor._set_limit(7)
+    assert executor.current_limit == 7
 
-        executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
+    executor.shutdown()
+    executor.join()
 
-        try:
-            executor._set_limit(15)
-            assert executor.current_limit == 10
-        finally:
-            executor.shutdown()
-            executor.join()
 
-    def test_submit_task(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 2
+def test_set_limit_decrease(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 7
 
-        executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
+    executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
 
-        try:
-            task_executed = threading.Event()
+    executor._set_limit(3)
+    assert executor.current_limit == 3
 
-            def test_task():
-                task_executed.set()
+    executor.shutdown()
+    executor.join()
 
-            executor.submit(test_task)
 
-            # Wait for task to complete with timeout
-            assert task_executed.wait(timeout=2), "Task did not execute within timeout"
-        finally:
-            executor.shutdown()
-            executor.join()
+def test_set_limit_respects_max_workers(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 5
 
-    def test_submit_multiple_tasks(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 3
+    executor = AdaptiveExecutor(max_workers=10, policy=mock_policy)
 
-        executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
+    executor._set_limit(15)
+    assert executor.current_limit == 10
 
-        try:
-            executed_tasks = []
-            lock = threading.Lock()
+    executor.shutdown()
+    executor.join()
 
-            def test_task(task_id):
-                with lock:
-                    executed_tasks.append(task_id)
 
-            for i in range(3):
-                executor.submit(test_task, i)
+def test_submit_task(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 2
 
-            # Wait for all tasks to complete
-            timeout = time.time() + 2
-            while True:
-                with lock:
-                    if len(executed_tasks) >= 3:
-                        break
-                if time.time() > timeout:
-                    break
-                time.sleep(0.1)
+    executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
 
-            with lock:
-                assert len(executed_tasks) == 3
-                assert set(executed_tasks) == {0, 1, 2}
-        finally:
-            executor.shutdown()
-            executor.join()
+    task_executed = threading.Event()
 
-    def test_join_waits_for_tasks(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 2
+    def test_task():
+        task_executed.set()
 
-        executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
+    executor.submit(test_task)
 
-        try:
-            task_started = threading.Event()
-            task_completed = threading.Event()
+    assert task_executed.wait(timeout=2)
 
-            def slow_task():
-                task_started.set()
-                time.sleep(0.5)
-                task_completed.set()
+    executor.shutdown()
+    executor.join()
 
-            executor.submit(slow_task)
 
-            # Wait for task to start
-            assert task_started.wait(timeout=1), "Task did not start within timeout"
+def test_submit_multiple_tasks(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 3
 
-            # Task should not be completed yet
-            assert not task_completed.is_set()
+    executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
 
-            # Join should wait for task completion
-            executor.join()
+    executed = set()
+    lock = threading.Lock()
+    done = threading.Event()
 
-            assert task_completed.is_set()
-        finally:
-            executor.shutdown()
-            executor.join()
+    def task(i):
+        with lock:
+            executed.add(i)
+            if len(executed) == 3:
+                done.set()
 
-    def test_shutdown(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 2
+    for i in range(3):
+        executor.submit(task, i)
 
-        executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
+    assert done.wait(timeout=2)
+    assert executed == {0, 1, 2}
 
-        try:
-            assert executor.shutdown_flag is False
+    executor.shutdown()
+    executor.join()
 
-            executor.shutdown()
 
-            assert executor.shutdown_flag is True
-        finally:
-            # Ensure cleanup even if shutdown() was already called
-            executor.join()
+def test_join_waits_for_tasks(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 2
 
-    @patch("adaptive_executor.executor.signal.signal")
-    def test_signal_handlers_registered(self, mock_signal):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 2
-        
-        executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
-        
-        try:
-            # Check that SIGINT was registered (available on all platforms)
-            assert mock_signal.call_count >= 1
-            assert any(
-                call_args[0][0] == signal.SIGINT
-                for call_args in mock_signal.call_args_list
-            ), "Signal SIGINT not found in calls"
-            
-            # Check that SIGTERM was registered if available (not on Windows)
-            if hasattr(signal, 'SIGTERM'):
-                assert mock_signal.call_count >= 2
-                assert any(
-                    call_args[0][0] == signal.SIGTERM
-                    for call_args in mock_signal.call_args_list
-                ), "Signal SIGTERM not found in calls"
-        finally:
-            executor.shutdown()
-            executor.join()
+    executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
 
-    def test_controller_updates_limit(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.side_effect = [3, 5, 7]
+    started = threading.Event()
+    completed = threading.Event()
 
-        executor = AdaptiveExecutor(
-            max_workers=10, policy=mock_policy, check_interval=0.1
-        )
+    def slow_task():
+        started.set()
+        time.sleep(0.3)
+        completed.set()
 
-        try:
-            initial_limit = executor.current_limit
+    executor.submit(slow_task)
 
-            # Wait for at least one controller update
-            time.sleep(0.25)
+    assert started.wait(timeout=1)
+    assert not completed.is_set()
 
-            # The limit should have changed from the initial value
-            assert executor.current_limit != initial_limit
-        finally:
-            executor.shutdown()
-            executor.join()
+    executor.join()
+    assert completed.is_set()
 
-    def test_task_with_kwargs(self):
-        mock_policy = MagicMock(spec=MultiCriterionPolicy)
-        mock_policy.target_workers.return_value = 2
+    executor.shutdown()
 
-        executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
 
-        try:
-            result = {}
-            lock = threading.Lock()
-            task_done = threading.Event()
+def test_shutdown(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 2
 
-            def test_task(key, value):
-                with lock:
-                    result[key] = value
-                task_done.set()
+    executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
 
-            executor.submit(test_task, key="test", value="success")
+    executor.shutdown()
+    assert executor.shutdown_flag is True
 
-            # Wait for task to complete
-            assert task_done.wait(timeout=2), "Task did not complete within timeout"
+    executor.join()
 
-            with lock:
-                assert result["test"] == "success"
-        finally:
-            executor.shutdown()
-            executor.join()
+
+@patch("adaptive_executor.executor.signal.signal")
+def test_signal_handlers_registered(mock_signal, mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 2
+
+    executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
+
+    signals = [call.args[0] for call in mock_signal.call_args_list]
+
+    assert signal.SIGINT in signals
+    if hasattr(signal, "SIGTERM"):
+        assert signal.SIGTERM in signals
+
+    executor.shutdown()
+    executor.join()
+
+
+def test_controller_updates_limit(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.side_effect = [3, 5, 7]
+
+    executor = AdaptiveExecutor(
+        max_workers=10,
+        policy=mock_policy,
+        check_interval=0.05,
+    )
+
+    initial = executor.current_limit
+    time.sleep(0.15)
+
+    assert executor.current_limit != initial
+
+    executor.shutdown()
+    executor.join()
+
+
+def test_task_with_kwargs(mocker):
+    mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
+    mock_policy.target_workers.return_value = 2
+
+    executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
+
+    result = {}
+    done = threading.Event()
+
+    def task(key, value):
+        result[key] = value
+        done.set()
+
+    executor.submit(task, key="test", value="success")
+
+    assert done.wait(timeout=2)
+    assert result["test"] == "success"
+
+    executor.shutdown()
+    executor.join()
