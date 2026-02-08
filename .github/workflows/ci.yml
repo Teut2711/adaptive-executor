@@ -56,15 +56,15 @@ jobs:
     - name: Check code formatting with Black
       run: |
         black --check --diff .
-
+    
     - name: Check import sorting with isort
       run: |
         isort --check-only --diff .
-
+    
     - name: Run linting with flake8
       run: |
         flake8 .
-
+    
     - name: Run type checking with mypy
       run: |
         mypy adaptive_executor
