@@ -61,10 +61,6 @@ dev = [
     "psutil>=5.9.0",
 ]
 
-[tool.pytest.ini_options]
-markers = [
-  "integration: marks tests as integration tests",
-]
 
 
 [project.urls]
