@@ -48,7 +48,7 @@ html_context = {
     'display_github': True,
     'github_user': 'Teut2711',
     'github_repo': 'adaptive-executor',
-    'github_version': 'main',
+    'github_version': 'master',
 }
 
 autodoc_default_options = {
