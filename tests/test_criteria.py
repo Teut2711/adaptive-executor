@@ -1,9 +1,10 @@
 import pytest
 import os
-from datetime import datetime
+from datetime import datetime, time
 from adaptive_executor.criteria import (
     ScalingCriterion,
     TimeCriterion,
+    DateTimeCriterion,
     CpuCriterion,
     MemoryCriterion,
     MultiCriterion,
@@ -20,21 +21,19 @@ def test_scaling_base_class_raises_not_implemented():
         criterion.max_workers()
 
 
-def test_time_criterion_initialization():
-    criterion = TimeCriterion(
+def test_datetime_criterion_initialization():
+    criterion = DateTimeCriterion(
         worker_count=8, 
         active_start=datetime(2026, 1, 1, 22, 0), 
         active_end=datetime(2026, 1, 1, 3, 0), 
         timezone=tz_to_run
     )
     assert criterion.worker_count == 8
-    assert criterion.active_start.hour == 22  # Extracted hour
-    assert criterion.active_end.hour == 3     # Extracted hour
     assert criterion.tz.zone == tz_to_run
 
 
-def test_time_criterion_with_datetime_objects():
-    criterion = TimeCriterion(
+def test_datetime_criterion_with_datetime_objects():
+    criterion = DateTimeCriterion(
         worker_count=8, 
         active_start=datetime(2024, 1, 1, 22, 30),  # 10:30 PM
         active_end=datetime(2024, 1, 1, 3, 30),     # 3:30 AM
@@ -44,30 +43,114 @@ def test_time_criterion_with_datetime_objects():
     assert criterion.tz.zone == tz_to_run
 
 
-def test_time_criterion_validation():
+def test_datetime_criterion_validation():
     # Test invalid types - must be datetime instances
     with pytest.raises(TypeError, match="active_start must be a datetime.datetime instance"):
-        TimeCriterion(worker_count=8, active_start=22, active_end=datetime(2026, 1, 1, 3, 0))
+        DateTimeCriterion(worker_count=8, active_start=22, active_end=datetime(2026, 1, 1, 3, 0))
     
     with pytest.raises(TypeError, match="active_end must be a datetime.datetime instance"):
-        TimeCriterion(worker_count=8, active_start=datetime(2026, 1, 1, 22, 0), active_end=3)
+        DateTimeCriterion(worker_count=8, active_start=datetime(2026, 1, 1, 22, 0), active_end=3)
     
     with pytest.raises(TypeError, match="active_start must be a datetime.datetime instance"):
-        TimeCriterion(worker_count=8, active_start="22", active_end=datetime(2026, 1, 1, 3, 0))
+        DateTimeCriterion(worker_count=8, active_start="22", active_end=datetime(2026, 1, 1, 3, 0))
     
     with pytest.raises(TypeError, match="active_end must be a datetime.datetime instance"):
-        TimeCriterion(worker_count=8, active_start=datetime(2026, 1, 1, 22, 0), active_end="3")
+        DateTimeCriterion(worker_count=8, active_start=datetime(2026, 1, 1, 22, 0), active_end="3")
     
     # Test invalid workers
     with pytest.raises(ValueError, match="worker_count must be at least 1"):
-        TimeCriterion(worker_count=0, active_start=datetime(2026, 1, 1, 22, 0), active_end=datetime(2026, 1, 1, 3, 0))
+        DateTimeCriterion(worker_count=0, active_start=datetime(2026, 1, 1, 22, 0), active_end=datetime(2026, 1, 1, 3, 0))
+
+
+def test_datetime_criterion_serialization():
+    # Test with datetime objects
+    criterion = DateTimeCriterion(
+        worker_count=8, 
+        active_start=datetime(2024, 1, 1, 22, 0), 
+        active_end=datetime(2024, 1, 1, 3, 0), 
+        timezone="UTC"
+    )
     
-    # Test invalid hour values
-    with pytest.raises(ValueError, match="active_start hour must be between 0 and 23"):
-        TimeCriterion(worker_count=8, active_start=datetime(2026, 1, 1, 25, 0), active_end=datetime(2026, 1, 1, 3, 0))
+    # Test to_dict
+    data = criterion.to_dict()
+    expected = {
+        "type": "DateTimeCriterion",
+        "worker_count": 8,
+        "active_start": "2024-01-01T22:00:00+00:00",
+        "active_end": "2024-01-01T03:00:00+00:00",
+        "timezone": "UTC"
+    }
+    assert data == expected
     
-    with pytest.raises(ValueError, match="active_end hour must be between 0 and 23"):
-        TimeCriterion(worker_count=8, active_start=datetime(2026, 1, 1, 22, 0), active_end=datetime(2026, 1, 1, 24, 0))
+    # Test from_dict
+    restored = DateTimeCriterion.from_dict(data)
+    assert restored.worker_count == 8
+    assert restored.tz.zone == "UTC"
+    
+    # Test with datetime objects with minutes
+    criterion_dt = DateTimeCriterion(
+        worker_count=8, 
+        active_start=datetime(2024, 1, 1, 22, 30), 
+        active_end=datetime(2024, 1, 1, 3, 30), 
+        timezone="UTC"
+    )
+    
+    data_dt = criterion_dt.to_dict()
+    # Should store as ISO formatted datetime strings
+    assert data_dt["active_start"] == "2024-01-01T22:30:00+00:00"
+    assert data_dt["active_end"] == "2024-01-01T03:30:00+00:00"
+    
+    # Test JSON serialization
+    json_str = criterion.to_json()
+    restored_from_json = DateTimeCriterion.from_json(json_str)
+    assert restored_from_json.worker_count == 8
+
+
+def test_time_criterion_initialization():
+    criterion = TimeCriterion(
+        worker_count=8, 
+        active_start=time(22, 0), 
+        active_end=time(3, 0), 
+        timezone=tz_to_run
+    )
+    assert criterion.worker_count == 8
+    assert criterion.active_start.hour == 22  # Extracted hour
+    assert criterion.active_end.hour == 3     # Extracted hour
+    assert criterion.tz.zone == tz_to_run
+
+
+def test_time_criterion_with_time_objects():
+    criterion = TimeCriterion(
+        worker_count=8, 
+        active_start=time(22, 30),  # 10:30 PM
+        active_end=time(3, 30),     # 3:30 AM
+        timezone=tz_to_run
+    )
+    assert criterion.worker_count == 8
+    assert criterion.active_start.hour == 22  # Extracted hour
+    assert criterion.active_start.minute == 30
+    assert criterion.active_end.hour == 3     # Extracted hour
+    assert criterion.active_end.minute == 30
+    assert criterion.tz.zone == tz_to_run
+
+
+def test_time_criterion_validation():
+    # Test invalid types - must be time instances
+    with pytest.raises(TypeError, match="active_start must be a datetime.time instance"):
+        TimeCriterion(worker_count=8, active_start=22, active_end=time(3, 0))
+    
+    with pytest.raises(TypeError, match="active_end must be a datetime.time instance"):
+        TimeCriterion(worker_count=8, active_start=time(22, 0), active_end=3)
+    
+    with pytest.raises(TypeError, match="active_start must be a datetime.time instance"):
+        TimeCriterion(worker_count=8, active_start="22", active_end=time(3, 0))
+    
+    with pytest.raises(TypeError, match="active_end must be a datetime.time instance"):
+        TimeCriterion(worker_count=8, active_start=time(22, 0), active_end="3")
+    
+    # Test invalid workers
+    with pytest.raises(ValueError, match="worker_count must be at least 1"):
+        TimeCriterion(worker_count=0, active_start=time(22, 0), active_end=time(3, 0))
 
 
 def test_time_criterion_missing_pytz():
@@ -275,13 +358,11 @@ def test_memory_criterion_scaling(memory_percent, expected, mocker):
 
 
 def test_time_criterion_serialization():
-    import datetime
-    
-    # Test with datetime objects
+    # Test with time objects
     criterion = TimeCriterion(
         worker_count=8, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0), 
+        active_start=time(22, 0), 
+        active_end=time(3, 0), 
         timezone="UTC"
     )
     
@@ -290,30 +371,29 @@ def test_time_criterion_serialization():
     expected = {
         "type": "TimeCriterion",
         "worker_count": 8,
-        "active_start": "2024-01-01T22:00:00+00:00",
-        "active_end": "2024-01-01T03:00:00+00:00",
+        "active_start": "22:00:00",
+        "active_end": "03:00:00",
         "timezone": "UTC"
     }
     assert data == expected
     
-    # Test from_dict - note that from_dict still accepts integers in the dict
+    # Test from_dict
     restored = TimeCriterion.from_dict(data)
     assert restored.worker_count == 8
-
     assert restored.tz.zone == "UTC"
     
-    # Test with datetime objects with minutes
+    # Test with time objects with minutes
     criterion_dt = TimeCriterion(
         worker_count=8, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 30), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 30), 
+        active_start=time(22, 30), 
+        active_end=time(3, 30), 
         timezone="UTC"
     )
     
     data_dt = criterion_dt.to_dict()
-    # Should store as ISO formatted datetime strings
-    assert data_dt["active_start"] == "2024-01-01T22:30:00+00:00"
-    assert data_dt["active_end"] == "2024-01-01T03:30:00+00:00"
+    # Should store as ISO formatted time strings
+    assert data_dt["active_start"] == "22:30:00"
+    assert data_dt["active_end"] == "03:30:00"
     
     # Test JSON serialization
     json_str = criterion.to_json()

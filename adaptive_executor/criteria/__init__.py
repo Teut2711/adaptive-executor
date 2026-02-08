@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from .base import ScalingCriterion
 from .time import TimeCriterion
+from .datetime import DateTimeCriterion
 from .cpu import CpuCriterion
 from .memory import MemoryCriterion
 from .multi import MultiCriterion, ConditionalCriterion
@@ -24,6 +25,8 @@ def from_dict(data: Dict[str, Any]) -> ScalingCriterion:
     
     if criterion_type == "TimeCriterion":
         return TimeCriterion.from_dict(data)
+    elif criterion_type == "DateTimeCriterion":
+        return DateTimeCriterion.from_dict(data)
     elif criterion_type == "CpuCriterion":
         return CpuCriterion.from_dict(data)
     elif criterion_type == "MemoryCriterion":
@@ -39,6 +42,7 @@ def from_dict(data: Dict[str, Any]) -> ScalingCriterion:
 __all__ = [
     'ScalingCriterion',
     'TimeCriterion',
+    'DateTimeCriterion',
     'CpuCriterion',
     'MemoryCriterion',
     'MultiCriterion',
