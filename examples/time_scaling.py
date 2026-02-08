@@ -1,47 +1,73 @@
 """
 Time-based Scaling Example
-========================
+=========================
 
 This example demonstrates how to use TimeCriterion to scale workers based on time of day.
 Perfect for applications that should be more aggressive during off-peak hours.
 """
 
+import datetime
 from adaptive_executor import AdaptiveExecutor
 from adaptive_executor.criteria import TimeCriterion
 
-
 def main():
-    # Create time-based criterion for night scaling
-    # Scale to 8 workers between 10PM-3AM, 1 worker otherwise
+    # Example 1: Night shift in New York timezone (10PM-3AM)
+    ny_shift_start = datetime.datetime(2024, 1, 1, 22, 0)  # 10PM
+    ny_shift_end = datetime.datetime(2024, 1, 2, 3, 0)     # 3AM next day
     
-    # Option 1: Using integers (simpler)
-    night_criterion = TimeCriterion(
-        workers=8,
-        start_time=22,  # 10PM
-        end_time=3,     # 3AM
-        tz="America/New_York"
+    ny_policy = TimeCriterion(
+        worker_count=8,
+        active_start=ny_shift_start,
+        active_end=ny_shift_end,
+        timezone="America/New_York"
     )
     
-    # Create executor with time-based scaling
-    executor = AdaptiveExecutor(
+    # Example 2: Day shift in India timezone (9AM-6PM)
+    in_shift_start = datetime.datetime(2024, 1, 1, 9, 0)  # 9AM
+    in_shift_end = datetime.datetime(2024, 1, 1, 18, 0)   # 6PM
+    
+    in_policy = TimeCriterion(
+        worker_count=6,
+        active_start=in_shift_start,
+        active_end=in_shift_end,
+        timezone="Asia/Kolkata"
+    )
+    
+    # Create executors for both policies
+    ny_executor = AdaptiveExecutor(
         max_workers=10,
-        policy=night_criterion,
-        check_interval=30  # Check every 30 seconds
+        policy=ny_policy,
+        check_interval=30
     )
     
-    print("Time-based Scaling Example")
+    
+    # Print configuration
+    print("Time-based Scaling Examples")
     print("=" * 40)
+    
+    print("\nNew York Office (Night Shift):")
+    print("-" * 30)
     print("Timezone: America/New_York")
-    print("Active hours: " + str(night_criterion.time_start) + ":00 - " + str(night_criterion.time_end) + ":00")
-    print("Workers during active hours: " + str(night_criterion.workers))
-    print("Workers outside active hours: 1")
+    print(f"Active window: {ny_shift_start.strftime('%H:%M')} - {ny_shift_end.strftime('%H:%M')} (next day)")
+    print(f"Workers during active window: {ny_policy.worker_count}")
+    print("Workers outside active window: 1")
+    
+    print("\nIndia Office (Day Shift):")
+    print("-" * 30)
+    print("Timezone: Asia/Kolkata")
+    print(f"Active window: {in_shift_start.strftime('%H:%M')} - {in_shift_end.strftime('%H:%M')}")
+    print(f"Workers during active window: {in_policy.worker_count}")
+    print("Workers outside active window: 1")
     print()
     
-    # Submit some example tasks
-    def process_task(task_id):
+    # Example of how to use the executors
+    def process_task(executor_name, task_id):
         import time
         time.sleep(1)
-        print("Task " + str(task_id) + " completed with " + str(executor.current_workers) + " workers")
+        print(f"{executor_name} - Task {task_id} completed with {executor.current_workers} workers")
+    
+    # Use ny_executor for demonstration
+    executor = ny_executor
     
     print("Submitting tasks...")
     for i in range(5):
