@@ -50,9 +50,8 @@ class TestMultiCriterionPolicy:
         assert policy.target_workers() == 1
 
     def test_target_workers_empty_criteria_list(self):
-        policy = MultiCriterionPolicy([], hard_cap=10)
-        with pytest.raises(ValueError):
-            policy.target_workers()
+        with pytest.raises(ValueError, match="At least one criterion is required"):
+            MultiCriterionPolicy([], hard_cap=10)
 
     def test_target_workers_calls_all_criteria(self):
         mock_criterion1 = MagicMock(spec=ScalingCriterion)
