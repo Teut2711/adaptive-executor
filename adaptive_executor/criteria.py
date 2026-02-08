@@ -6,7 +6,7 @@ its worker pool based on different conditions like time, CPU usage, etc.
 import datetime
 import importlib.util
 import json
-from typing import Any, Dict, List, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, Tuple, Type, TypeVar
 
 import pytz
 
@@ -101,16 +101,21 @@ class ScalingCriterion:
         except Exception as e:
             logger.error("Failed to deserialize criterion from JSON: %s", str(e), exc_info=True)
             raise
-
-
+    @staticmethod    
+    def _parse_datetime(dt_val):
+        return datetime.datetime.fromisoformat(dt_val)
+        
+    def _format_with_tz(self, dt: datetime.datetime) -> str:
+        return dt.astimezone(self.tz).isoformat()
+        
+        
 class TimeCriterion(ScalingCriterion):
-    """A criterion that scales workers based on time of day.
+    """A criterion that scales workers based on timestamp.
     
-    This criterion returns the configured worker count if the current time falls
+    This criterion returns the configured worker count if the current timestamp falls
     within the specified time range (inclusive start, exclusive end), otherwise
     returns 1 (minimum workers).
     
-    The time range can wrap around midnight (e.g., 22:00 to 06:00).
     """
     
     def __init__(
@@ -124,8 +129,8 @@ class TimeCriterion(ScalingCriterion):
         
         Args:
             worker_count: Number of workers to use during active hours
-            active_start: Start time of the active period
-            active_end: End time of the active period
+            active_start: Start timestamp of the active period
+            active_end: End timestamp of the active period
             timezone: Timezone for the active period (default: "UTC")
                 
         Raises:
@@ -169,27 +174,19 @@ class TimeCriterion(ScalingCriterion):
         """
         try:
             now = datetime.datetime.now(self.tz)
-            current_hour = now.hour
-            
-            # Check if current time is within the active window
-            # The window wraps around midnight, so we check different cases
-            if self.active_start <= self.active_end:
-                # Normal range (e.g., 9-17)
-                is_active = self.active_start <= current_hour < self.active_end
-            else:
-                # Wraps around midnight (e.g., 22-3)
-                is_active = current_hour >= self.active_start or current_hour < self.active_end
+           
+            is_active = self.active_start <= now <= self.active_end
             
             if is_active:
                 logger.debug(
-                    "TimeCriterion: Active time %02d:00-%02d:00, current time %s -> %d workers",
-                    self.time_start, self.time_end, now.strftime("%H:%M"), self.worker_count
+                    "TimeCriterion: Active time %s-%s, current time %s -> %d workers",
+                    self.active_start.strftime('%H:%M'), self.active_end.strftime('%H:%M'), now.strftime('%H:%M'), self.worker_count
                 )
                 return self.worker_count
             else:
                 logger.debug(
-                    "TimeCriterion: Outside active time %02d:00-%02d:00, current time %s -> 1 worker",
-                    self.time_start, self.time_end, now.strftime("%H:%M")
+                    "TimeCriterion: Outside active time %s-%s, current time %s -> 1 worker",
+                    self.active_start.strftime('%H:%M'), self.active_end.strftime('%H:%M'), now.strftime('%H:%M')
                 )
                 return 1  # Minimum workers outside time range
                 
@@ -204,21 +201,21 @@ class TimeCriterion(ScalingCriterion):
         return {
             "type": "TimeCriterion",
             "worker_count": self.worker_count,
-            "active_start": self.active_start,
-            "active_end": self.active_end,
+            "active_start": self._format_with_tz(self.active_start),
+            "active_end": self._format_with_tz(self.active_end),
             "timezone": self.tz.zone
         }
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TimeCriterion":
-        # Convert integer hours to datetime.datetime objects
-        start_hour = data["active_start"]
-        end_hour = data["active_end"]
+        # Parse timestamps using the base class method
+        active_start = cls._parse_datetime(data["active_start"])
+        active_end = cls._parse_datetime(data["active_end"])
         
         return cls(
             worker_count=data["worker_count"],
-            active_start=datetime.datetime(2024, 1, 1, start_hour, 0),
-            active_end=datetime.datetime(2024, 1, 1, end_hour, 0),
+            active_start=active_start,
+            active_end=active_end,
             timezone=data["timezone"]
         )
 
@@ -404,37 +401,12 @@ class MultiCriterion(ScalingCriterion):
             for criterion, workers in self.criteria:
                 if criterion.max_workers() > 1:
                     return workers
-            return 1
-        return 1
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "type": "MultiCriterion",
-            "criteria": [(criterion.to_dict(), workers) for criterion, workers in self.criteria],
-            "logic": self.logic
-        }
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MultiCriterion":
-        criteria = []
-        for criterion_data, workers in data["criteria"]:
-            criterion_type = criterion_data["type"]
-            if criterion_type == "TimeCriterion":
-                criterion = TimeCriterion.from_dict(criterion_data)
-            elif criterion_type == "CpuCriterion":
-                criterion = CpuCriterion.from_dict(criterion_data)
-            elif criterion_type == "MemoryCriterion":
-                criterion = MemoryCriterion.from_dict(criterion_data)
-            else:
-                raise ValueError(f"Unknown criterion type: {criterion_type}")
-            criteria.append((criterion, workers))
-        
-        return cls(criteria=criteria, logic=data["logic"])
+                return 1
+            return 1 
 
-
-class ConditionalCriterion(ScalingCriterion):
-    def __init__(self, condition_criterion: ScalingCriterion, action_criterion: ScalingCriterion, workers: int):
-        """
+    class ConditionalCriterion(ScalingCriterion):
+        def __init__(self, condition_criterion: ScalingCriterion, action_criterion: ScalingCriterion, workers: int):
+            """
         ConditionalCriterion applies action only when condition is met.
         
         Args:

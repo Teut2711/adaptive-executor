@@ -6,6 +6,8 @@ from .criteria import (
     TimeCriterion,
     CpuCriterion,
     MemoryCriterion,
+    MultiCriterion,
+    ConditionalCriterion,
 )
 from .utils import get_logger, setup_logger, logger
 
@@ -16,6 +18,8 @@ __all__ = [
     "TimeCriterion",
     "CpuCriterion",
     "MemoryCriterion",
+    "MultiCriterion",
+    "ConditionalCriterion",
     "get_logger",
     "setup_logger",
     "logger",

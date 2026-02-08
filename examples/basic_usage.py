@@ -1,7 +1,7 @@
 """Basic usage example for adaptive-executor with enhanced logging."""
 import logging
 import time
-from datetime import datetime, time as dt_time
+from datetime import datetime
 
 from adaptive_executor import (
     AdaptiveExecutor,
@@ -31,17 +31,17 @@ def main():
         logger.debug("Creating time-based criteria")
         day_criterion = TimeCriterion(
             worker_count=8,  # More workers during the day
-            active_start=dt_time(9, 0),  # 9 AM
-            active_end=dt_time(17, 0),  # 5 PM
-            timezone="US/Eastern"
+            active_start=datetime(2026, 1, 8, 22, 0),  # 9 AM
+            active_end=datetime(2026, 1, 8, 23, 0),  # 5 PM
+            timezone="Asia/Kolkata"
         )
         logger.debug("Created day criterion: %s", day_criterion)
         
         night_criterion = TimeCriterion(
             worker_count=2,  # Fewer workers at night
-            active_start=dt_time(17, 0),  # 5 PM
-            active_end=dt_time(9, 0),  # 9 AM
-            timezone="US/Eastern"
+            active_start=datetime(2026, 1, 9, 22, 0),  # 5 PM
+            active_end=datetime(2026, 1, 9, 23, 0),  # 9 AM
+            timezone="Asia/Kolkata"
         )
         logger.debug("Created night criterion: %s", night_criterion)
 
