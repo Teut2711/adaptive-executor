@@ -1,6 +1,4 @@
 import pytest
-from unittest.mock import patch, MagicMock
-
 from adaptive_executor.criteria import (
     ScalingCriterion,
     TimeCriterion,
@@ -31,7 +29,7 @@ class TestTimeCriterion:
             night_workers=15,
             night_start=20,
             night_end=6,
-            tz="UTC",
+            tz="UTC"
         )
         assert criterion.day_workers == 5
         assert criterion.night_workers == 15
@@ -39,50 +37,63 @@ class TestTimeCriterion:
         assert criterion.night_end == 6
         assert criterion.tz.zone == "UTC"
 
-    @patch('adaptive_executor.criteria.datetime')
-    def test_daytime_workers(self, mock_datetime):
-        mock_now = MagicMock()
-        mock_now.hour = 10
-        mock_datetime.now.return_value = mock_now
-        
-        criterion = TimeCriterion()
-        assert criterion.max_workers() == 2
+    @pytest.mark.parametrize("hour,expected", [
+        (10, 2),   # Daytime
+        (23, 12),  # Nighttime before midnight
+        (2, 12),   # Nighttime after midnight
+        (22, 12),  # Exactly night start
+        (3, 12),   # Exactly night end
+    ])
+    def test_time_based_scaling(self, hour, expected):
+        with pytest.MonkeyPatch() as mock_datetime:
+            import datetime
+            mock_now = datetime.datetime(2024, 1, 1, hour, 0, 0)
+            mock_datetime.datetime.now.return_value = mock_now
+            
+            criterion = TimeCriterion()
+            result = criterion.max_workers()
+            assert result == expected
 
-    @patch('adaptive_executor.criteria.datetime')
-    def test_nighttime_workers_before_midnight(self, mock_datetime):
-        mock_now = MagicMock()
-        mock_now.hour = 23
-        mock_datetime.now.return_value = mock_now
-        
-        criterion = TimeCriterion()
-        assert criterion.max_workers() == 12
+    @pytest.fixture
+    def sample_criterion(self):
+        return TimeCriterion(day_workers=3, night_workers=8)
 
-    @patch('adaptive_executor.criteria.datetime')
-    def test_nighttime_workers_after_midnight(self, mock_datetime):
-        mock_now = MagicMock()
-        mock_now.hour = 2
-        mock_datetime.now.return_value = mock_now
-        
-        criterion = TimeCriterion()
-        assert criterion.max_workers() == 12
+    def test_with_fixture(self, sample_criterion):
+        assert sample_criterion.day_workers == 3
+        assert sample_criterion.night_workers == 8
 
-    @patch('adaptive_executor.criteria.datetime')
-    def test_edge_case_night_start(self, mock_datetime):
-        mock_now = MagicMock()
-        mock_now.hour = 22
-        mock_datetime.now.return_value = mock_now
-        
-        criterion = TimeCriterion()
-        assert criterion.max_workers() == 12
+    @pytest.mark.parametrize("hour,expected", [
+        (23, 12),  # Nighttime before midnight
+        (2, 12),   # Nighttime after midnight
+        (22, 12),  # Exactly night start
+        (3, 12),   # Exactly night end
+    ])
+    def test_nighttime_scenarios_before_midnight(self, hour, expected):
+        with pytest.MonkeyPatch() as mock_datetime:
+            import datetime
+            mock_now = datetime.datetime(2024, 1, 1, hour, 0, 0)
+            mock_datetime.datetime.now.return_value = mock_now
+            
+            criterion = TimeCriterion()
+            result = criterion.max_workers()
+            assert result == expected
 
-    @patch('adaptive_executor.criteria.datetime')
-    def test_edge_case_night_end(self, mock_datetime):
-        mock_now = MagicMock()
-        mock_now.hour = 3
-        mock_datetime.now.return_value = mock_now
-        
-        criterion = TimeCriterion()
-        assert criterion.max_workers() == 12
+    @pytest.mark.parametrize("hour,expected", [
+        (10, 2),   # Daytime
+        (23, 12),  # Nighttime before midnight
+        (2, 12),   # Nighttime after midnight
+        (22, 12),  # Exactly night start
+        (3, 12),   # Exactly night end
+    ])
+    def test_edge_cases(self, hour, expected):
+        with pytest.MonkeyPatch() as mock_datetime:
+            import datetime
+            mock_now = datetime.datetime(2024, 1, 1, hour, 0, 0)
+            mock_datetime.datetime.now.return_value = mock_now
+            
+            criterion = TimeCriterion()
+            result = criterion.max_workers()
+            assert result == expected
 
 
 class TestCpuCriterion:
@@ -106,11 +117,22 @@ class TestCpuCriterion:
         criterion = CpuCriterion(threshold=75)
         assert criterion.max_workers() == 12
 
-    @patch('adaptive_executor.criteria.psutil.cpu_percent')
-    def test_threshold_exact(self, mock_cpu_percent):
-        mock_cpu_percent.return_value = 75
-        criterion = CpuCriterion(threshold=75)
-        assert criterion.max_workers() == 12
+    @pytest.mark.parametrize("cpu_percent,expected", [
+        (50, 12),  # Low CPU
+        (75, 12),  # At threshold
+        (80, 2),   # Above threshold
+        (90, 2),   # High CPU
+    ])
+    def test_cpu_based_scaling(self, cpu_percent, expected):
+        with pytest.MonkeyPatch() as mock_psutil:
+            mock_psutil.cpu_percent.return_value = cpu_percent
+            
+            import sys
+            sys.modules['psutil'] = mock_psutil
+            
+            criterion = CpuCriterion()
+            result = criterion.max_workers()
+            assert result == expected
 
 
 class TestMemoryCriterion:
