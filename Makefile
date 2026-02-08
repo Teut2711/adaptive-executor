@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test lint format type-check docs clean build upload
+.PHONY: help install install-dev test lint format type-check docs clean build upload publish
 
 help:
 	@echo "Available commands:"
