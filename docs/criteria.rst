@@ -9,33 +9,45 @@ Basic Criteria
 TimeCriterion
 ~~~~~~~~~~~~~~~
 
-Scale workers based on time of day.
+Scale workers based on time of day using datetime objects for precise time window specification.
 
 See the :doc:`time scaling example <../examples/time_scaling>` for a complete implementation.
 
 Parameters:
-    * **workers** (int): Number of workers when time condition is met
-    * **start_time** (int or datetime.time): Starting time - either hour (0-23) or datetime.time object
-    * **end_time** (int or datetime.time): Ending time - either hour (0-23) or datetime.time object  
-    * **tz** (str): Timezone string (default: "UTC")
+    * **worker_count** (int): Number of workers during active time window (must be ≥ 1)
+    * **active_start** (datetime.datetime): Start time of active window (only hour and minute are used)
+    * **active_end** (datetime.datetime): End time of active window (only hour and minute are used)
+    * **timezone** (str): Timezone string (e.g., "America/New_York", "Asia/Kolkata") (default: "UTC")
+
+Raises:
+    * **TypeError**: If active_start or active_end are not datetime.datetime objects
+    * **ValueError**: If worker_count is less than 1 or hours are not in 0-23 range
+    * **ImportError**: If pytz package is not installed
 
 Examples:
     .. code-block:: python
 
-        # Using integers (hours)
-        TimeCriterion(workers=8, start_time=22, end_time=3)  # 10PM to 3AM
+        from datetime import datetime
         
-        # Using datetime.time objects
-        from datetime import time
-        TimeCriterion(workers=8, start_time=time(22, 0), end_time=time(3, 0))  # 10PM to 3AM
+        # Night shift (10PM to 3AM next day)
+        TimeCriterion(
+            worker_count=8,
+            active_start=datetime(2024, 1, 1, 22, 0),  # 10PM
+            active_end=datetime(2024, 1, 2, 3, 0),     # 3AM next day
+            timezone="America/New_York"
+        )
         
-        # Use case: Peak processing window (April 13th 5:30PM to April 17th 5:20AM)
-        # Scale to maximum workers during critical business hours
-        TimeCriterion(workers=12, start_time=time(17, 30), end_time=time(5, 20))
+        # Day shift (9AM to 6PM)
+        TimeCriterion(
+            worker_count=6,
+            active_start=datetime(2024, 1, 1, 9, 0),   # 9AM
+            active_end=datetime(2024, 1, 1, 18, 0),    # 6PM
+            timezone="Asia/Kolkata"
+        )
 
-The time range wraps around midnight. For example, start_time=22 and end_time=3 creates an active window from 10PM to 3AM.
+The time range wraps around midnight. For example, 22:00 to 03:00 creates an active window from 10PM to 3AM.
 
-Returns **workers** when current hour is between time_start and time_end, otherwise returns **1**.
+Returns **worker_count** when current time is within the active window (inclusive of start time, exclusive of end time), otherwise returns **1**.
 
 
 CpuCriterion
