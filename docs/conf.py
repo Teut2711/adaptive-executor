@@ -20,11 +20,15 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-html_baseurl = 'https://Teut2711.github.io/adaptive-executor/'
+html_baseurl = os.environ.get('PAGES_URL', '')
+
+html_copy_source = False
+html_show_sourcelink = False
+html_show_sphinx = False
 
 html_meta_tags = {
     'description': 'Adaptive Executor - Python thread pool executor with dynamic scaling policies based on time, CPU, and memory usage',
-    'keywords': 'python, threading, concurrency, executor, adaptive, scaling, thread pool, scheduler, performance',
+    'keywords': 'threading, concurrency, executor, adaptive, scaling, scheduler, thread, pool, executor',
     'author': 'Teut2711',
     'viewport': 'width=device-width, initial-scale=1.0',
     'og:title': 'Adaptive Executor - Dynamic Thread Pool Scaling',
