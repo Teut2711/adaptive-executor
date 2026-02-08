@@ -9,6 +9,7 @@ Installation Options
 Adaptive Executor offers flexible installation options to suit your needs:
 
 **Minimal Installation (Core Only)**
+
 .. code-block:: bash
 
    pip install adaptive-executor
@@ -16,6 +17,7 @@ Adaptive Executor offers flexible installation options to suit your needs:
 This installs only the core library without any optional dependencies.
 
 **Feature-Specific Installations**
+
 .. code-block:: bash
 
    # Time-based scaling only
@@ -31,11 +33,13 @@ This installs only the core library without any optional dependencies.
    pip install adaptive-executor[standard]
 
 **Development Installation**
+
 .. code-block:: bash
 
    pip install adaptive-executor[dev]
 
 **All Features**
+
 .. code-block:: bash
 
    pip install adaptive-executor[all]
@@ -44,20 +48,26 @@ Feature Dependencies
 -------------------
 
 **Core Package**
+
 No dependencies - provides the base AdaptiveExecutor and MultiCriterionPolicy classes.
 
 **Time Feature (`[time]`)**
+
 * **pytz >= 2023.3**: Required for TimeCriterion for timezone-aware scheduling
 
 **CPU/Memory Feature (`[cpu]`)**
+
 * **psutil >= 5.9.0**: Required for CpuCriterion and MemoryCriterion for system monitoring
 
 **Standard Feature (`[standard]`)**
+
 * Includes both `time` and `cpu` features
 * **Recommended for most users**
 
 **Development Features (`[dev]`)**
-* All standard features plus:
+
+All standard features plus:
+
 * **pytest >= 7.0.0**: Testing framework with async support
 * **pytest-cov >= 4.0.0**: Coverage reporting for test quality
 * **black >= 23.0.0**: Code formatting for consistent style
@@ -194,16 +204,19 @@ Troubleshooting
 ---------------
 
 **ImportError for TimeCriterion**
+
 .. code-block:: bash
 
    pip install adaptive-executor[time]
 
 **ImportError for CpuCriterion/MemoryCriterion**
+
 .. code-block:: bash
 
    pip install adaptive-executor[cpu]
 
 **Multiple features needed**
+
 .. code-block:: bash
 
    pip install adaptive-executor[time,cpu]
