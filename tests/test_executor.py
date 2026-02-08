@@ -1,7 +1,7 @@
 import time
 import threading
 import signal
-from unittest.mock import MagicMock, patch, ANY, call
+from unittest.mock import MagicMock, patch
 
 from adaptive_executor.executor import AdaptiveExecutor
 from adaptive_executor.policies import MultiCriterionPolicy
@@ -180,33 +180,26 @@ class TestAdaptiveExecutor:
 
     @patch("adaptive_executor.executor.signal.signal")
     def test_signal_handlers_registered(self, mock_signal):
-        import sys
-
         mock_policy = MagicMock(spec=MultiCriterionPolicy)
         mock_policy.target_workers.return_value = 2
-
+        
         executor = AdaptiveExecutor(max_workers=5, policy=mock_policy)
-
+        
         try:
-            # On Windows, SIGTERM is not available, only SIGINT
-            if sys.platform == "win32":
-                assert mock_signal.call_count >= 1
-                # Check that SIGINT was registered
+            # Check that SIGINT was registered (available on all platforms)
+            assert mock_signal.call_count >= 1
+            assert any(
+                call_args[0][0] == signal.SIGINT
+                for call_args in mock_signal.call_args_list
+            ), "Signal SIGINT not found in calls"
+            
+            # Check that SIGTERM was registered if available (not on Windows)
+            if hasattr(signal, 'SIGTERM'):
+                assert mock_signal.call_count >= 2
                 assert any(
-                    call_args[0][0] == signal.SIGINT
+                    call_args[0][0] == signal.SIGTERM
                     for call_args in mock_signal.call_args_list
-                ), "Signal SIGINT not found in calls"
-            else:
-                assert mock_signal.call_count == 2
-
-                # Check that signal was called with SIGINT and SIGTERM
-                expected_calls = [call(signal.SIGINT, ANY), call(signal.SIGTERM, ANY)]
-
-                for expected_call in expected_calls:
-                    assert any(
-                        call_args[0][0] == expected_call[0]
-                        for call_args in mock_signal.call_args_list
-                    ), f"Signal {expected_call[0]} not found in calls"
+                ), "Signal SIGTERM not found in calls"
         finally:
             executor.shutdown()
             executor.join()

@@ -35,17 +35,25 @@ class AdaptiveExecutor:
     def _register_signal_handlers(self):
         def handler(signum, frame):
             signame = (
-                signal.Signals(signum).name if hasattr(signal, "Signals") else signum
+                signal.Signals(signum).name if hasattr(signal, "Signals") else str(signum)
             )
             logger.info("Received signal %s, shutting down...", signame)
             self.shutdown()
 
-        for sig in (signal.SIGINT, signal.SIGTERM):
+        # Register SIGINT (available on all platforms)
+        try:
+            signal.signal(signal.SIGINT, handler)
+            logger.debug("Registered signal handler for SIGINT")
+        except (ValueError, AttributeError) as e:
+            logger.warning("Failed to register signal handler for SIGINT: %s", e)
+
+        # Register SIGTERM (not available on Windows)
+        if hasattr(signal, 'SIGTERM'):
             try:
-                signal.signal(sig, handler)
-                logger.debug("Registered signal handler for %s", sig)
+                signal.signal(signal.SIGTERM, handler)
+                logger.debug("Registered signal handler for SIGTERM")
             except (ValueError, AttributeError) as e:
-                logger.warning("Failed to register signal handler for %s: %s", sig, e)
+                logger.warning("Failed to register signal handler for SIGTERM: %s", e)
 
     def _set_limit(self, new_limit):
         new_limit = min(new_limit, self.max_workers)
