@@ -9,6 +9,7 @@ Adaptive thread pool executor with dynamic scaling policies for optimal Python c
 
    installation
    quickstart
+   criteria
    api
    examples
 

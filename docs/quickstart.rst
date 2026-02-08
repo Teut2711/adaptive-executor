@@ -14,8 +14,8 @@ The simplest way to use Adaptive Executor is with a basic scaling policy:
    from adaptive_executor.criteria import TimeCriterion, CpuCriterion
 
    # Create criteria for scaling
-   time_criteria = TimeCriterion(day_workers=2, night_workers=8)
-   cpu_criteria = CpuCriterion(threshold=75)
+   time_criteria = TimeCriterion(workers=8, time_start=22, time_end=3)
+   cpu_criteria = CpuCriterion(threshold=75.0, workers=4)
 
    # Combine criteria with a policy
    policy = MultiCriterionPolicy([time_criteria, cpu_criteria], hard_cap=10)
@@ -35,8 +35,8 @@ The simplest way to use Adaptive Executor is with a basic scaling policy:
    executor.shutdown()
 
 This example creates an executor that:
-* Uses 2 workers during day hours, 8 workers during night hours
-* Scales down to 2 workers when CPU usage exceeds 75%
+* Uses 8 workers between 10PM-3AM, 1 worker otherwise
+* Scales to 4 workers when CPU usage >= 75%
 * Never exceeds 10 workers (hard cap)
 * Checks scaling conditions every 30 seconds
 
