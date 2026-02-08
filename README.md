@@ -68,6 +68,65 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
+## Logging Configuration
+
+The adaptive-executor provides comprehensive logging that can be configured to suit your needs. By default, it logs to the console with INFO level.
+
+### Basic Logging Control
+
+```python
+from adaptive_executor import setup_logger
+
+# Disable all logging
+setup_logger(level=logging.CRITICAL)
+
+# Or set a specific log level
+import logging
+setup_logger(level=logging.WARNING)  # Only show warnings and above
+```
+
+### Advanced Logging Configuration
+
+You can also configure file logging with rotation:
+
+```python
+# Configure file logging with rotation (10MB per file, keep 5 backups)
+setup_logger(
+    level=logging.DEBUG,
+    log_file="/var/log/adaptive_executor.log",
+    max_bytes=10*1024*1024,  # 10MB
+    backup_count=5
+)
+```
+
+### Environment Variables
+
+You can control logging via environment variables:
+
+```bash
+# Set log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+ADAPTIVE_EXECUTOR_LOG_LEVEL=WARNING
+
+# Enable file logging
+ADAPTIVE_EXECUTOR_LOG_FILE=/path/to/logfile.log
+
+# Set max log file size (in bytes)
+ADAPTIVE_EXECUTOR_LOG_MAX_BYTES=10485760  # 10MB
+
+# Set number of backup files to keep
+ADAPTIVE_EXECUTOR_LOG_BACKUP_COUNT=5
+```
+
+### Disabling Logging Completely
+
+To completely disable all logging:
+
+```python
+import logging
+logging.getLogger('adaptive_executor').addHandler(logging.NullHandler())
+logging.getLogger('adaptive_executor').propagate = False
+```
+
 ## Documentation
 
 Full documentation is available at [https://Teut2711.github.io/adaptive-executor](https://Teut2711.github.io/adaptive-executor)

@@ -7,6 +7,7 @@ from .criteria import (
     CpuCriterion,
     MemoryCriterion,
 )
+from .utils import get_logger, setup_logger, logger
 
 __all__ = [
     "AdaptiveExecutor",
@@ -15,4 +16,7 @@ __all__ = [
     "TimeCriterion",
     "CpuCriterion",
     "MemoryCriterion",
+    "get_logger",
+    "setup_logger",
+    "logger",
 ]

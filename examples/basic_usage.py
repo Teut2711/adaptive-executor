@@ -1,52 +1,103 @@
-from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
-from adaptive_executor.criteria import TimeCriterion, CpuCriterion
+"""Basic usage example for adaptive-executor with enhanced logging."""
+import logging
 import time
+from datetime import datetime, time as dt_time
+
+from adaptive_executor import (
+    AdaptiveExecutor,
+    TimeCriterion,
+    MultiCriterionPolicy,
+    setup_logger,
+)
+
+# Configure logging for the example
+setup_logger(level=logging.DEBUG)
+logger = logging.getLogger("example.basic_usage")
+
 
 def simple_task(task_id):
-    print(f"Processing task {task_id}")
+    """A simple task that simulates work."""
+    logger.debug("Processing task %s", task_id)
     time.sleep(1)
     return f"Completed task {task_id}"
 
+
 def main():
-    print("=== Adaptive Executor Basic Usage Example ===")
+    """Main function demonstrating basic usage of the adaptive executor."""
+    logger.info("Starting basic usage example")
     
-    # Create scaling criteria
-    time_policy = TimeCriterion(
-        day_workers=2,      # Conservative during day
-        night_workers=8,      # More workers at night
-        night_start=22,       # 10 PM
-        night_end=6,          # 6 AM
-        tz="UTC"
-    )
-    
-    cpu_policy = CpuCriterion(threshold=75)
-    
-    # Combine criteria with policy
-    policy = MultiCriterionPolicy(
-        [time_policy, cpu_policy],
-        hard_cap=10
-    )
-    
-    # Create executor
-    executor = AdaptiveExecutor(
-        max_workers=15,
-        policy=policy,
-        check_interval=30  # Check every 30 seconds
-    )
-    
-    print(f"Initial worker limit: {executor.current_limit}")
-    print("Submitting 10 tasks...")
-    
-    # Submit tasks
-    for i in range(10):
-        executor.submit(simple_task, i)
-    
-    # Wait for completion
-    print("Waiting for tasks to complete...")
-    executor.join()
-    
-    print("All tasks completed!")
-    executor.shutdown()
+    try:
+        # Create time-based criteria for different times of day
+        logger.debug("Creating time-based criteria")
+        day_criterion = TimeCriterion(
+            worker_count=8,  # More workers during the day
+            active_start=dt_time(9, 0),  # 9 AM
+            active_end=dt_time(17, 0),  # 5 PM
+            timezone="US/Eastern"
+        )
+        logger.debug("Created day criterion: %s", day_criterion)
+        
+        night_criterion = TimeCriterion(
+            worker_count=2,  # Fewer workers at night
+            active_start=dt_time(17, 0),  # 5 PM
+            active_end=dt_time(9, 0),  # 9 AM
+            timezone="US/Eastern"
+        )
+        logger.debug("Created night criterion: %s", night_criterion)
+
+        # Create a policy that combines the criteria
+        logger.debug("Creating MultiCriterionPolicy")
+        policy = MultiCriterionPolicy(
+            criteria=[day_criterion, night_criterion],
+            hard_cap=10
+        )
+        logger.info("Policy created: %s", policy)
+
+        # Create the executor with our policy
+        logger.debug("Creating AdaptiveExecutor with max_workers=10, check_interval=5")
+        executor = AdaptiveExecutor(
+            max_workers=10,
+            policy=policy,
+            check_interval=5  # Check every 5 seconds
+        )
+        logger.info("Executor created and running")
+
+        # Submit some tasks
+        logger.info("Submitting tasks...")
+        tasks = []
+        for i in range(5):
+            task = executor.submit(simple_task, i)
+            tasks.append(task)
+            logger.debug("Submitted task %d", i)
+        
+        # Wait for tasks to complete
+        logger.info("Waiting for tasks to complete...")
+        for i, task in enumerate(tasks):
+            try:
+                result = task.result()
+                logger.info("Task %d completed: %s", i, result)
+            except Exception as e:
+                logger.error("Task %d failed: %s", i, str(e), exc_info=True)
+        
+        logger.info("All tasks completed! Current worker limit: %d", 
+                   executor.current_limit)
+        
+        # Clean up
+        logger.debug("Shutting down executor")
+        executor.shutdown()
+        return 0
+    except Exception as e:
+        logger.critical("Error in main execution: %s", str(e), exc_info=True)
+        return 1
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        exit_code = main()
+        exit(exit_code)
+    except KeyboardInterrupt:
+        logger.info("Example interrupted by user")
+        exit(1)
+    except Exception as e:
+        logger.critical("Unexpected error: %s", str(e), exc_info=True)
+        exit(1)
