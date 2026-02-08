@@ -8,6 +8,13 @@ from .cpu import CpuCriterion
 from .memory import MemoryCriterion
 from .multi import MultiCriterion, ConditionalCriterion
 
+# Also expose the modules for patching
+from . import time
+from . import datetime
+from . import cpu
+from . import memory
+from . import multi
+
 
 def from_dict(data: Dict[str, Any]) -> ScalingCriterion:
     """Create a criterion from a dictionary.
@@ -47,5 +54,10 @@ __all__ = [
     'MemoryCriterion',
     'MultiCriterion',
     'ConditionalCriterion',
-    'from_dict'
+    'from_dict',
+    'time',
+    'datetime',
+    'cpu',
+    'memory',
+    'multi'
 ]

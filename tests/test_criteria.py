@@ -156,7 +156,6 @@ def test_time_criterion_validation():
 def test_time_criterion_missing_pytz():
     import sys
     import importlib
-    import datetime
     
     # Store original modules
     original_modules = sys.modules.copy()
@@ -183,8 +182,8 @@ def test_time_criterion_missing_pytz():
         with pytest.raises(ImportError, match="TimeCriterion requires 'pytz' package"):
             criteria_module.TimeCriterion(
                 worker_count=8, 
-                active_start=datetime.datetime(2026, 1, 1, 22, 0), 
-                active_end=datetime.datetime(2026, 1, 1, 3, 0)
+                active_start=time(22, 0), 
+                active_end=time(3, 0)
             )
     finally:
         # Restore everything
@@ -203,20 +202,21 @@ def test_time_criterion_missing_pytz():
 def test_time_criterion_scaling(hour, expected, mocker):
     import datetime
     import pytz
-    
+    import adaptive_executor.criteria.time
+
     # Create a timezone-aware datetime
-    tz = pytz.UTC
+    tz = pytz.timezone(tz_to_run)
     mock_now = datetime.datetime(2026, 1, 1, hour, 0, 0, tzinfo=tz)
     
     # Mock datetime.datetime.now to return timezone-aware datetime
     mock_datetime_module = mocker.MagicMock()
     mock_datetime_module.now.return_value = mock_now
-    mocker.patch('adaptive_executor.criteria.datetime', mock_datetime_module)
+    mocker.patch('datetime.datetime', mock_datetime_module)
     
     criterion = TimeCriterion(
         worker_count=8, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0)
+        active_start=time(22, 0), 
+        active_end=time(3, 0)
     )
     result = criterion.max_workers()
     assert result == expected
@@ -271,6 +271,7 @@ def test_cpu_criterion_missing_psutil():
 ])
 def test_cpu_criterion_scaling(cpu_percent, expected, mocker):
     # Mock psutil module
+    # Mock psutil module at the global level
     mock_psutil = mocker.MagicMock()
     mock_psutil.cpu_percent.return_value = cpu_percent
     mocker.patch.dict('sys.modules', {'psutil': mock_psutil})
@@ -280,9 +281,6 @@ def test_cpu_criterion_scaling(cpu_percent, expected, mocker):
     mocker.patch('importlib.util.find_spec', return_value=mock_spec)
     
     criterion = CpuCriterion(threshold=75.0, workers=4)
-    
-    # Patch psutil in the criteria module
-    mocker.patch('adaptive_executor.criteria.psutil', mock_psutil)
     
     result = criterion.max_workers()
     assert result == expected
@@ -340,6 +338,7 @@ def test_memory_criterion_scaling(memory_percent, expected, mocker):
     mock_memory = mocker.MagicMock()
     mock_memory.percent = memory_percent
     
+    # Mock psutil module at the global level
     mock_psutil = mocker.MagicMock()
     mock_psutil.virtual_memory.return_value = mock_memory
     mocker.patch.dict('sys.modules', {'psutil': mock_psutil})
@@ -349,9 +348,6 @@ def test_memory_criterion_scaling(memory_percent, expected, mocker):
     mocker.patch('importlib.util.find_spec', return_value=mock_spec)
     
     criterion = MemoryCriterion(threshold=80.0, workers=6)
-    
-    # Patch psutil in the criteria module
-    mocker.patch('adaptive_executor.criteria.psutil', mock_psutil)
     
     result = criterion.max_workers()
     assert result == expected
@@ -402,12 +398,10 @@ def test_time_criterion_serialization():
 
 
 def test_multi_criterion_validation():
-    import datetime
-    
     time_crit = TimeCriterion(
         worker_count=2, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0)
+        active_start=time(22, 0), 
+        active_end=time(3, 0)
     )
     
     # Test invalid logic
@@ -439,8 +433,8 @@ def test_multi_criterion_and_logic(mocker):
     
     time_crit = TimeCriterion(
         worker_count=4, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0)
+        active_start=time(22, 0), 
+        active_end=time(3, 0)
     )
     memory_crit = MemoryCriterion(threshold=80.0, workers=6)
     
@@ -455,14 +449,15 @@ def test_multi_criterion_and_logic(mocker):
     
     mock_datetime_module = mocker.MagicMock()
     mock_datetime_module.now.return_value = mock_now
-    mocker.patch('adaptive_executor.criteria.datetime', mock_datetime_module)
+    mocker.patch('datetime.datetime', mock_datetime_module)
     
     mock_memory = mocker.MagicMock()
     mock_memory.percent = 85.0
     
+    # Mock psutil module at the global level
     mock_psutil = mocker.MagicMock()
     mock_psutil.virtual_memory.return_value = mock_memory
-    mocker.patch('adaptive_executor.criteria.psutil', mock_psutil)
+    mocker.patch.dict('sys.modules', {'psutil': mock_psutil})
     
     result = multi.max_workers()
     # Both conditions met, should return max(4, 6) = 6
@@ -478,8 +473,8 @@ def test_multi_criterion_or_logic(mocker):
     
     time_crit = TimeCriterion(
         worker_count=4, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0)
+        active_start=time(22, 0), 
+        active_end=time(3, 0)
     )
     memory_crit = MemoryCriterion(threshold=80.0, workers=6)
     
@@ -494,14 +489,15 @@ def test_multi_criterion_or_logic(mocker):
     
     mock_datetime_module = mocker.MagicMock()
     mock_datetime_module.now.return_value = mock_now
-    mocker.patch('adaptive_executor.criteria.datetime', mock_datetime_module)
+    mocker.patch('datetime.datetime', mock_datetime_module)
     
     mock_memory = mocker.MagicMock()
     mock_memory.percent = 70.0
     
+    # Mock psutil module at the global level
     mock_psutil = mocker.MagicMock()
     mock_psutil.virtual_memory.return_value = mock_memory
-    mocker.patch('adaptive_executor.criteria.psutil', mock_psutil)
+    mocker.patch.dict('sys.modules', {'psutil': mock_psutil})
     
     result = multi.max_workers()
     # Time condition met, should return 4
@@ -511,7 +507,6 @@ def test_multi_criterion_or_logic(mocker):
 @pytest.mark.integration
 def test_complex_scenario_between_time_and_memory(mocker):
     """Test: Between 10PM-3AM if memory > 80% then 2 workers"""
-    
     import datetime
     
     # Mock find_spec for both pytz and psutil
@@ -521,8 +516,8 @@ def test_complex_scenario_between_time_and_memory(mocker):
     # Time criterion for 10PM-3AM
     time_crit = TimeCriterion(
         worker_count=2, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0)
+        active_start=time(22, 0), 
+        active_end=time(3, 0)
     )
     
     # Memory criterion for >80%
@@ -539,15 +534,16 @@ def test_complex_scenario_between_time_and_memory(mocker):
     
     mock_datetime_module = mocker.MagicMock()
     mock_datetime_module.now.return_value = mock_now
-    mocker.patch('adaptive_executor.criteria.datetime', mock_datetime_module)
+    mocker.patch('datetime.datetime', mock_datetime_module)
     
     # Mock memory > 80%
     mock_memory = mocker.MagicMock()
     mock_memory.percent = 85.0
     
+    # Mock psutil module at the global level
     mock_psutil = mocker.MagicMock()
     mock_psutil.virtual_memory.return_value = mock_memory
-    mocker.patch('adaptive_executor.criteria.psutil', mock_psutil)
+    mocker.patch.dict('sys.modules', {'psutil': mock_psutil})
     
     result = multi.max_workers()
     # Both conditions met, should return 2
@@ -565,16 +561,14 @@ def test_serialization_error_handling():
 
 
 def test_conditional_criterion_serialization(mocker):
-    import datetime
-    
     # Mock find_spec for both pytz and psutil
     mock_spec = mocker.MagicMock()
     mocker.patch('importlib.util.find_spec', return_value=mock_spec)
     
     time_crit = TimeCriterion(
         worker_count=8, 
-        active_start=datetime.datetime(2024, 1, 1, 22, 0), 
-        active_end=datetime.datetime(2024, 1, 1, 3, 0)
+        active_start=time(22, 0), 
+        active_end=time(3, 0)
     )
     memory_crit = MemoryCriterion(threshold=80.0, workers=4)
     

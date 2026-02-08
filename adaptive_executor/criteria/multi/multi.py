@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Tuple
 
 from ..base import ScalingCriterion
 from ..time import TimeCriterion
+from ..datetime import DateTimeCriterion
 from ..cpu import CpuCriterion
 from ..memory import MemoryCriterion
 from ...utils import get_logger
@@ -144,6 +145,8 @@ class MultiCriterion(ScalingCriterion):
                 
                 if criterion_type == "TimeCriterion":
                     criterion = TimeCriterion.from_dict(criterion_data)
+                elif criterion_type == "DateTimeCriterion":
+                    criterion = DateTimeCriterion.from_dict(criterion_data)
                 elif criterion_type == "CpuCriterion":
                     criterion = CpuCriterion.from_dict(criterion_data)
                 elif criterion_type == "MemoryCriterion":

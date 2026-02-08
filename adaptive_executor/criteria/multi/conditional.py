@@ -111,8 +111,8 @@ class ConditionalCriterion(ScalingCriterion):
             ValueError: If values are invalid
         """
         try:
-            # Import here to avoid circular imports
-            from . import from_dict
+            # Import the main from_dict function to handle all criterion types
+            from .. import from_dict
             
             condition_data = data["condition_criterion"]
             action_data = data["action_criterion"]
