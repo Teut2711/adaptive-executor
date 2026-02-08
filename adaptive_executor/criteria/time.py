@@ -93,7 +93,7 @@ class TimeCriterion(ScalingCriterion):
                 is_active = self.active_start <= current_time <= self.active_end
             else:
                 # Cross-midnight range: start > end (e.g., 22:00 to 06:00)
-                is_active = current_time >= self.active_start or current_time <= self.active_end
+                is_active = current_time >= self.active_start or current_time < self.active_end
             
             if is_active:
                 logger.debug(

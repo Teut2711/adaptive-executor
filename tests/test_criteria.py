@@ -202,7 +202,6 @@ def test_time_criterion_missing_pytz():
 def test_time_criterion_scaling(hour, expected, mocker):
     import datetime
     import pytz
-    import adaptive_executor.criteria.time
 
     # Create a timezone-aware datetime
     tz = pytz.timezone(tz_to_run)
