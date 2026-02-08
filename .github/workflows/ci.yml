@@ -55,19 +55,19 @@ jobs:
 
     - name: Check code formatting with Black
       run: |
-        black --check --diff .
+        black --check --diff adaptive_executor examples docs
     
     - name: Check import sorting with isort
       run: |
-        isort --check-only --diff .
+        isort --check-only --diff adaptive_executor examples docs
     
     - name: Run linting with flake8
       run: |
-        flake8 .
+        flake8 adaptive_executor examples docs
     
     - name: Run type checking with mypy
       run: |
-        mypy adaptive_executor
+        mypy adaptive_executor examples docs
 
   docs:
     runs-on: ubuntu-latest

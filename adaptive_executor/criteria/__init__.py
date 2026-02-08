@@ -1,4 +1,5 @@
 """Scaling criteria for adaptive executor."""
+
 from typing import Any, Dict
 
 from .base import ScalingCriterion
@@ -18,18 +19,18 @@ from . import multi
 
 def from_dict(data: Dict[str, Any]) -> ScalingCriterion:
     """Create a criterion from a dictionary.
-    
+
     Args:
         data: Dictionary containing serialized criterion data
-        
+
     Returns:
         ScalingCriterion: An instance of the appropriate criterion class
-        
+
     Raises:
         ValueError: If the criterion type is unknown
     """
     criterion_type = data.get("type")
-    
+
     if criterion_type == "TimeCriterion":
         return TimeCriterion.from_dict(data)
     elif criterion_type == "DateTimeCriterion":
@@ -47,17 +48,17 @@ def from_dict(data: Dict[str, Any]) -> ScalingCriterion:
 
 
 __all__ = [
-    'ScalingCriterion',
-    'TimeCriterion',
-    'DateTimeCriterion',
-    'CpuCriterion',
-    'MemoryCriterion',
-    'MultiCriterion',
-    'ConditionalCriterion',
-    'from_dict',
-    'time',
-    'datetime',
-    'cpu',
-    'memory',
-    'multi'
+    "ScalingCriterion",
+    "TimeCriterion",
+    "DateTimeCriterion",
+    "CpuCriterion",
+    "MemoryCriterion",
+    "MultiCriterion",
+    "ConditionalCriterion",
+    "from_dict",
+    "time",
+    "datetime",
+    "cpu",
+    "memory",
+    "multi",
 ]
