@@ -1,0 +1,109 @@
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adaptive-executor"
+version = "0.1.0"
+description = "Adaptive thread pool executor with dynamic scaling policies"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Teut2711", email = "manglavishesh64@gmail.com"}
+]
+maintainers = [
+    {name = "Teut2711", email = "manglavishesh64@gmail.com"}
+]
+keywords = ["threading", "concurrency", "executor", "adaptive", "scaling", "scheduler", "thread","pool", "executor"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+time = [
+    "pytz>=2023.3",
+]
+cpu = [
+    "psutil>=5.9.0",
+]
+standard = [
+    "pytz>=2023.3",
+    "psutil>=5.9.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+]
+all = [
+    "pytz>=2023.3",
+    "psutil>=5.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Teut2711/adaptive-executor"
+Documentation = "https://Teut2711.github.io/adaptive-executor"
+Repository = "https://github.com/Teut2711/adaptive-executor"
+"Bug Tracker" = "https://github.com/Teut2711/adaptive-executor/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["adaptive_executor*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=adaptive_executor --cov-report=term-missing --cov-report=html"
+
+[tool.coverage.run]
+source = ["adaptive_executor"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
