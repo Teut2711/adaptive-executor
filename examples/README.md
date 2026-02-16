@@ -5,7 +5,7 @@ This directory contains practical examples of using Adaptive Executor in various
 ## Examples
 
 ### [Basic Usage](./basic_usage.py)
-Simple example showing basic Adaptive Executor setup with time and CPU-based scaling.
+Simple example showing basic Adaptive Executor setup with time-based scaling.
 
 ### [Web Scraping](./web_scraping.py)
 Demonstrates time-based scaling for web scraping applications that should be more aggressive during off-peak hours.

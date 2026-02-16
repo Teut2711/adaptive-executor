@@ -36,10 +36,16 @@ pip install adaptive-executor[dev]
 ```python
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import TimeCriterion, CpuCriterion
+from datetime import time
 
 # Create scaling criteria
-time_policy = TimeCriterion(day_workers=2, night_workers=8)
-cpu_policy = CpuCriterion(threshold=75)
+time_policy = TimeCriterion(
+    worker_count=8,
+    active_start=time(22, 0),
+    active_end=time(6, 0),
+    timezone="UTC",
+)
+cpu_policy = CpuCriterion(threshold=75, workers=4)
 
 # Combine criteria
 policy = MultiCriterionPolicy([time_policy, cpu_policy], hard_cap=10)

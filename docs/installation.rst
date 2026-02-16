@@ -38,14 +38,8 @@ This installs only the core library without any optional dependencies.
 
    pip install adaptive-executor[dev]
 
-**All Features**
-
-.. code-block:: bash
-
-   pip install adaptive-executor[all]
-
 Feature Dependencies
--------------------
+--------------------
 
 **Core Package**
 
@@ -112,7 +106,7 @@ For contributors or advanced users who want to modify the library:
    pip install -e ".[dev]"
 
 Usage Examples by Installation Type
-----------------------------------
+-----------------------------------
 
 **Minimal Installation**
 Only provides the base classes - you'll need to create your own criteria:
@@ -134,9 +128,16 @@ Enables time-based scaling:
 
 .. code-block:: python
 
+   from datetime import time
+   from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import TimeCriterion
    
-   time_crit = TimeCriterion(day_workers=2, night_workers=8)
+   time_crit = TimeCriterion(
+       worker_count=8,
+       active_start=time(22, 0),
+       active_end=time(6, 0),
+       timezone="UTC",
+   )
    policy = MultiCriterionPolicy([time_crit], hard_cap=10)
    executor = AdaptiveExecutor(max_workers=15, policy=policy)
 
@@ -145,10 +146,11 @@ Enables resource-aware scaling:
 
 .. code-block:: python
 
+   from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import CpuCriterion, MemoryCriterion
    
-   cpu_crit = CpuCriterion(threshold=75)
-   mem_crit = MemoryCriterion(threshold=80)
+   cpu_crit = CpuCriterion(threshold=75, workers=4)
+   mem_crit = MemoryCriterion(threshold=80, workers=4)
    policy = MultiCriterionPolicy([cpu_crit, mem_crit], hard_cap=10)
    executor = AdaptiveExecutor(max_workers=15, policy=policy)
 
@@ -157,11 +159,18 @@ Combines all features for maximum flexibility:
 
 .. code-block:: python
 
+   from datetime import time
+   from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import TimeCriterion, CpuCriterion, MemoryCriterion
    
-   time_crit = TimeCriterion(day_workers=2, night_workers=8)
-   cpu_crit = CpuCriterion(threshold=75)
-   mem_crit = MemoryCriterion(threshold=80)
+   time_crit = TimeCriterion(
+       worker_count=8,
+       active_start=time(22, 0),
+       active_end=time(6, 0),
+       timezone="UTC",
+   )
+   cpu_crit = CpuCriterion(threshold=75, workers=4)
+   mem_crit = MemoryCriterion(threshold=80, workers=4)
    
    policy = MultiCriterionPolicy([time_crit, cpu_crit, mem_crit], hard_cap=15)
    executor = AdaptiveExecutor(max_workers=20, policy=policy)

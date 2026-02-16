@@ -1,5 +1,5 @@
 Scaling Criteria
-===============
+================
 
 The adaptive-executor provides flexible scaling criteria to dynamically adjust worker counts based on various conditions.
 
@@ -11,7 +11,7 @@ TimeCriterion
 
 Scale workers based on time of day using datetime.time objects for daily recurring schedules.
 
-See :doc:`time scaling example <../examples/time_scaling>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Parameters:
     * **worker_count** (int): Number of workers during active time window (must be ≥ 1)
@@ -55,7 +55,7 @@ DateTimeCriterion
 
 Scale workers based on specific datetime objects for precise timestamp scheduling.
 
-See :doc:`datetime scaling example <../examples/datetime_scaling>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Parameters:
     * **worker_count** (int): Number of workers during active time window (must be ≥ 1)
@@ -97,7 +97,7 @@ CpuCriterion
 
 Scale workers based on CPU usage.
 
-See :doc:`resource-based example <../examples/resource_scaling>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Parameters:
     * **threshold** (float): CPU percentage threshold (0-100)
@@ -111,7 +111,7 @@ MemoryCriterion
 
 Scale workers based on memory usage.
 
-See :doc:`resource-based example <../examples/resource_scaling>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Parameters:
     * **threshold** (float): Memory percentage threshold (0-100)
@@ -121,29 +121,29 @@ Returns **workers** when memory usage >= threshold, otherwise returns **1**.
 
 
 Advanced Criteria
-----------------
+-----------------
 
 MultiCriterion
 ~~~~~~~~~~~~~~
 
 Combine multiple criteria with AND/OR logic.
 
-See :doc:`complex logic example <../examples/complex_scaling>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Parameters:
     * **criteria** (list): List of (criterion, workers) tuples
     * **logic** (str): "and" or "or" for combining conditions
 
 Logic:
-    * **"and"**: All conditions must be met, returns workers from first criterion
-    * **"or"**: Any condition met, returns workers from matching criterion
+    * **"and"**: All conditions must be met, returns the maximum workers among configured tuples
+    * **"or"**: Any condition met, returns workers from the first matching criterion tuple
 
 ConditionalCriterion
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 Apply different criteria based on conditions.
 
-See :doc:`conditional example <../examples/conditional_scaling>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Parameters:
     * **condition_criterion** (ScalingCriterion): Criterion that determines when to apply
@@ -154,11 +154,11 @@ Returns **workers** when condition is met, otherwise returns **action_criterion.
 
 
 JSON Serialization
------------------
+------------------
 
 All criteria support JSON serialization for configuration and persistence.
 
-See :doc:`configuration example <../examples/config_management>` for a complete implementation.
+See :doc:`examples` for a complete implementation.
 
 Available Methods:
     * **to_dict()**: Convert to dictionary
@@ -170,13 +170,13 @@ Available Methods:
 Usage Examples
 --------------
 
-For complete working examples, see the :doc:`examples documentation <../examples/>`.
+For complete working examples, see :doc:`examples`.
 
 Key Patterns
 ~~~~~~~~~~~~~
 
 * **Daily Time-based Scaling**: Use :class:`TimeCriterion` for recurring daily schedules
 * **Specific DateTime Scaling**: Use :class:`DateTimeCriterion` for one-time or date-specific scheduling
-* **Resource-based Scaling**: See :doc:`resource scaling example <../examples/resource_scaling>`
-* **Complex Logic**: See :doc:`complex scaling example <../examples/complex_scaling>`
-* **Configuration Management**: See :doc:`configuration example <../examples/config_management>`
+* **Resource-based Scaling**: See :doc:`examples`
+* **Complex Logic**: See :doc:`examples`
+* **Configuration Management**: See :doc:`examples`

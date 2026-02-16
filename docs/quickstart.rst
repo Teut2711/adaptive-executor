@@ -10,11 +10,17 @@ The simplest way to use Adaptive Executor is with a basic scaling policy:
 
 .. code-block:: python
 
+   from datetime import time
    from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import TimeCriterion, CpuCriterion
 
    # Create criteria for scaling
-   time_criteria = TimeCriterion(workers=8, time_start=22, time_end=3)
+   time_criteria = TimeCriterion(
+       worker_count=8,
+       active_start=time(22, 0),
+       active_end=time(3, 0),
+       timezone="UTC",
+   )
    cpu_criteria = CpuCriterion(threshold=75.0, workers=4)
 
    # Combine criteria with a policy
@@ -50,15 +56,16 @@ Optimize performance based on time of day - perfect for applications that should
 
 .. code-block:: python
 
+   from datetime import time
+   from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import TimeCriterion
 
    # Scale based on time of day
    time_crit = TimeCriterion(
-       day_workers=2,      # Conservative during business hours
-       night_workers=10,   # Aggressive during off-peak hours  
-       night_start=22,     # 10 PM start of night period
-       night_end=6,        # 6 AM end of night period
-       tz="America/New_York"  # Your timezone
+       worker_count=10,       # Aggressive during off-peak hours
+       active_start=time(22, 0),
+       active_end=time(6, 0),
+       timezone="America/New_York",
    )
 
    # Use with executor
@@ -77,11 +84,12 @@ Automatically reduce concurrency when system resources are constrained:
 
 .. code-block:: python
 
+   from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import CpuCriterion
 
    # Scale based on CPU usage
-   cpu_crit = CpuCriterion(threshold=80)
-   # Uses 2 workers when CPU > 80%, otherwise 12 workers
+   cpu_crit = CpuCriterion(threshold=80, workers=4)
+   # Uses 4 workers when CPU >= 80%, otherwise 1 worker
 
    policy = MultiCriterionPolicy([cpu_crit], hard_cap=15)
    executor = AdaptiveExecutor(max_workers=20, policy=policy)
@@ -98,11 +106,12 @@ Protect your system from memory exhaustion during data-intensive operations:
 
 .. code-block:: python
 
+   from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import MemoryCriterion
 
    # Scale based on memory usage
-   mem_crit = MemoryCriterion(threshold=85)
-   # Uses 2 workers when memory > 85%, otherwise 12 workers
+   mem_crit = MemoryCriterion(threshold=85, workers=4)
+   # Uses 4 workers when memory >= 85%, otherwise 1 worker
 
    policy = MultiCriterionPolicy([mem_crit], hard_cap=15)
    executor = AdaptiveExecutor(max_workers=20, policy=policy)
@@ -116,23 +125,25 @@ Advanced Configuration
 ----------------------
 
 Multi-criteria Scaling
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Combine multiple criteria for sophisticated scaling behavior:
 
 .. code-block:: python
 
+   from datetime import time
    from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import TimeCriterion, CpuCriterion, MemoryCriterion
 
    # Create multiple scaling criteria
    time_policy = TimeCriterion(
-       day_workers=3, night_workers=12,
-       night_start=20, night_end=6,
-       tz="UTC"
+       worker_count=12,
+       active_start=time(20, 0),
+       active_end=time(6, 0),
+       timezone="UTC",
    )
-   cpu_policy = CpuCriterion(threshold=75)
-   memory_policy = MemoryCriterion(threshold=80)
+   cpu_policy = CpuCriterion(threshold=75, workers=3)
+   memory_policy = MemoryCriterion(threshold=80, workers=3)
 
    # Combine all criteria
    policy = MultiCriterionPolicy(
@@ -162,6 +173,7 @@ Web Scraping with Time Optimization
 .. code-block:: python
 
    import time
+   from datetime import time as dt_time
    from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
    from adaptive_executor.criteria import TimeCriterion
    import requests
@@ -177,10 +189,10 @@ Web Scraping with Time Optimization
 
    # Aggressive scraping during off-peak hours
    time_policy = TimeCriterion(
-       day_workers=2,      # Respectful during business hours
-       night_workers=20,    # Aggressive during night
-       night_start=22, night_end=6,
-       tz="America/New_York"
+       worker_count=20,  # Aggressive during off-peak
+       active_start=dt_time(22, 0),
+       active_end=dt_time(6, 0),
+       timezone="America/New_York",
    )
 
    policy = MultiCriterionPolicy([time_policy], hard_cap=25)
@@ -218,8 +230,8 @@ Data Processing with Resource Awareness
            return 0
 
    # Conservative scaling to protect system resources
-   cpu_policy = CpuCriterion(threshold=70)
-   memory_policy = MemoryCriterion(threshold=75)
+   cpu_policy = CpuCriterion(threshold=70, workers=4)
+   memory_policy = MemoryCriterion(threshold=75, workers=4)
 
    policy = MultiCriterionPolicy([cpu_policy, memory_policy], hard_cap=8)
    executor = AdaptiveExecutor(max_workers=12, policy=policy, check_interval=30)
