@@ -177,6 +177,109 @@ def test_time_criterion_validation():
         TimeCriterion(worker_count=0, active_start=time(22, 0), active_end=time(3, 0))
 
 
+def test_datetime_criterion_missing_pytz():
+    import sys
+    import importlib
+
+    # Store original modules
+    original_modules = sys.modules.copy()
+
+    # Remove pytz and criteria module
+    sys.modules.pop("pytz", None)
+    sys.modules.pop("adaptive_executor.criteria", None)
+
+    try:
+        # Mock importlib.util.find_spec to return None for pytz
+        import importlib.util
+
+        original_find_spec = importlib.util.find_spec
+
+        def mock_find_spec(name):
+            if name == "pytz":
+                return None
+            return original_find_spec(name)
+
+        importlib.util.find_spec = mock_find_spec
+
+        # Reimport the module
+        import adaptive_executor.criteria as criteria_module
+
+        with pytest.raises(ImportError, match="DateTimeCriterion requires 'pytz' package"):
+            criteria_module.DateTimeCriterion(
+                worker_count=8, 
+                active_start=datetime(2026, 1, 1, 22, 0), 
+                active_end=datetime(2026, 1, 1, 3, 0)
+            )
+    finally:
+        # Restore everything
+        importlib.util.find_spec = original_find_spec
+        sys.modules.clear()
+        sys.modules.update(original_modules)
+
+
+def test_datetime_criterion_invalid_timezone():
+    with pytest.raises(ValueError, match="Invalid timezone"):
+        DateTimeCriterion(
+            worker_count=8,
+            active_start=datetime(2026, 1, 1, 22, 0),
+            active_end=datetime(2026, 1, 1, 3, 0),
+            timezone="Invalid/Timezone",
+        )
+
+
+@pytest.mark.parametrize(
+    "hour,expected",
+    [
+        (10, 1),  # Daytime (outside range)
+        (23, 8),  # Nighttime (in range)
+        (2, 8),  # After midnight (in range)
+        (22, 8),  # Exactly at start
+        (3, 1),  # Exactly at end (exclusive)
+    ],
+)
+def test_datetime_criterion_scaling(hour, expected, mocker):
+    import datetime
+    import pytz
+
+    # Create a timezone-aware datetime
+    tz = pytz.timezone(tz_to_run)
+    mock_now = datetime.datetime(2026, 1, 1, hour, 0, 0, tzinfo=tz)
+
+    # Mock datetime.datetime.now to return timezone-aware datetime
+    mock_datetime_module = mocker.MagicMock()
+    mock_datetime_module.now.return_value = mock_now
+    mocker.patch("datetime.datetime", mock_datetime_module)
+
+    criterion = DateTimeCriterion(
+        worker_count=8, 
+        active_start=datetime(2026, 1, 1, 22, 0),
+        active_end=datetime(2026, 1, 2, 3, 0),
+        timezone=tz_to_run,
+    )
+    result = criterion.max_workers()
+    assert result == expected
+
+
+def test_datetime_criterion_max_workers_exception_handling(mocker):
+    import datetime
+    
+    # Mock datetime.datetime.now to raise an exception
+    mock_datetime_module = mocker.MagicMock()
+    mock_datetime_module.now.side_effect = Exception("Time error")
+    mocker.patch("datetime.datetime", mock_datetime_module)
+
+    criterion = DateTimeCriterion(
+        worker_count=8,
+        active_start=datetime(2026, 1, 1, 22, 0),
+        active_end=datetime(2026, 1, 2, 3, 0),
+        timezone="UTC",
+    )
+    
+    # Should return 1 (fallback) when exception occurs
+    result = criterion.max_workers()
+    assert result == 1
+
+
 def test_time_criterion_missing_pytz():
     import sys
     import importlib
