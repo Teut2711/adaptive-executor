@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -63,7 +67,7 @@ jobs:
         black_args: "src/adaptive_executor examples docs"
 
     - name: Create Pull Request if formatted
-      if: steps.action_black.outputs.is_formatted == 'true'
+      if: steps.action_black.outputs.is_formatted == 'true' && github.event_name == 'push'
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
