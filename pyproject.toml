@@ -70,8 +70,11 @@ Documentation = "https://Teut2711.github.io/adaptive-executor"
 Repository = "https://github.com/Teut2711/adaptive-executor"
 "Bug Tracker" = "https://github.com/Teut2711/adaptive-executor/issues"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["adaptive_executor*"]
 
 [tool.black]
@@ -96,6 +99,10 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "--cov=adaptive_executor --cov-report=term-missing --cov-report=html"
+markers = [
+    "integration: slow integration tests",
+    "unit: fast isolated tests",
+]
 
 [tool.coverage.run]
 source = ["adaptive_executor"]

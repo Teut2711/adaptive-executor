@@ -66,6 +66,8 @@ executor.shutdown()
 
 ## Development Setup
 
+This project uses `setuptools` with a `src/` package layout (`src/adaptive_executor`).
+
 ```bash
 git clone https://github.com/Teut2711/adaptive-executor.git
 cd adaptive-executor

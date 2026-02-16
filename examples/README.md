@@ -16,6 +16,9 @@ Shows resource-aware scaling for CPU and memory-intensive data processing tasks.
 ### [Multi-criteria Scaling](./multi_criteria.py)
 Advanced example combining time, CPU, and memory criteria for intelligent scaling.
 
+### [Datetime Scaling](./datetime_scaling.py)
+Shows explicit date-and-time window scaling using `DateTimeCriterion`.
+
 ### [Custom Criteria](./custom_criteria.py)
 Example of creating custom scaling criteria for your specific use case.
 

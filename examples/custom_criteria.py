@@ -1,5 +1,9 @@
 import time
 import random
+from datetime import datetime
+
+import pytz
+
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import ScalingCriterion
 
@@ -37,15 +41,10 @@ class TimeOfDayCriterion(ScalingCriterion):
     """Custom time-based criterion with more granular control."""
 
     def __init__(self, timezone="UTC"):
-        from datetime import datetime
-        import pytz
-
         self.tz = pytz.timezone(timezone)
 
     def max_workers(self):
         """Calculate optimal workers based on current load."""
-        from datetime import datetime
-
         hour = datetime.now(self.tz).hour
 
         # More granular time-based scaling

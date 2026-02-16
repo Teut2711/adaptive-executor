@@ -228,52 +228,50 @@ def test_datetime_criterion_invalid_timezone():
 
 
 @pytest.mark.parametrize(
-    "hour,expected",
+    "day,hour,minute,expected",
     [
-        (10, 1),  # Daytime (outside range)
-        (23, 8),  # Nighttime (in range)
-        (2, 8),  # After midnight (in range)
-        (22, 8),  # Exactly at start
-        (3, 1),  # Exactly at end (exclusive)
+        (1, 10, 0, 1),  # Daytime (outside range)
+        (1, 23, 0, 8),  # Nighttime (in range)
+        (2, 2, 0, 8),  # After midnight (in range)
+        (1, 22, 0, 8),  # Exactly at start
+        (2, 3, 1, 1),  # Just after end of active range
     ],
 )
-def test_datetime_criterion_scaling(hour, expected, mocker):
-    import datetime
+def test_datetime_criterion_scaling(day, hour, minute, expected, mocker):
     import pytz
 
     # Create a timezone-aware datetime
     tz = pytz.timezone(tz_to_run)
-    mock_now = datetime.datetime(2026, 1, 1, hour, 0, 0, tzinfo=tz)
-
-    # Mock datetime.datetime.now to return timezone-aware datetime
-    mock_datetime_module = mocker.MagicMock()
-    mock_datetime_module.now.return_value = mock_now
-    mocker.patch("datetime.datetime", mock_datetime_module)
+    mock_now = tz.localize(datetime(2026, 1, day, hour, minute, 0))
 
     criterion = DateTimeCriterion(
-        worker_count=8, 
+        worker_count=8,
         active_start=datetime(2026, 1, 1, 22, 0),
         active_end=datetime(2026, 1, 2, 3, 0),
         timezone=tz_to_run,
     )
+
+    # Mock the datetime class used inside the criterion module.
+    mock_datetime_module = mocker.MagicMock()
+    mock_datetime_module.now.return_value = mock_now
+    mocker.patch("adaptive_executor.criteria.datetime.datetime.datetime", mock_datetime_module)
+
     result = criterion.max_workers()
     assert result == expected
 
 
 def test_datetime_criterion_max_workers_exception_handling(mocker):
-    import datetime
-    
-    # Mock datetime.datetime.now to raise an exception
-    mock_datetime_module = mocker.MagicMock()
-    mock_datetime_module.now.side_effect = Exception("Time error")
-    mocker.patch("datetime.datetime", mock_datetime_module)
-
     criterion = DateTimeCriterion(
         worker_count=8,
         active_start=datetime(2026, 1, 1, 22, 0),
         active_end=datetime(2026, 1, 2, 3, 0),
         timezone="UTC",
     )
+
+    # Mock datetime.datetime.now to raise an exception
+    mock_datetime_module = mocker.MagicMock()
+    mock_datetime_module.now.side_effect = Exception("Time error")
+    mocker.patch("adaptive_executor.criteria.datetime.datetime.datetime", mock_datetime_module)
     
     # Should return 1 (fallback) when exception occurs
     result = criterion.max_workers()

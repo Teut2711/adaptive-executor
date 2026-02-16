@@ -60,7 +60,7 @@ jobs:
       uses: rickstaa/action-black@v1
       id: action_black
       with:
-        black_args: "adaptive_executor examples docs"
+        black_args: "src/adaptive_executor examples docs"
 
     - name: Create Pull Request if formatted
       if: steps.action_black.outputs.is_formatted == 'true'
@@ -78,19 +78,19 @@ jobs:
     - name: Check code formatting with Black (fallback)
       if: steps.action_black.outputs.is_formatted != 'true'
       run: |
-        black --check --diff adaptive_executor examples docs
+        black --check --diff src/adaptive_executor examples docs
     
     - name: Check import sorting with isort
       run: |
-        isort --check-only --diff adaptive_executor examples docs
+        isort --check-only --diff src/adaptive_executor examples docs
     
     - name: Run linting with flake8
       run: |
-        flake8 adaptive_executor examples docs
+        flake8 src/adaptive_executor examples docs
     
     - name: Run type checking with mypy
       run: |
-        mypy adaptive_executor examples docs
+        mypy src/adaptive_executor examples docs
 
   docs:
     runs-on: ubuntu-latest

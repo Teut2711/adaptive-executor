@@ -23,15 +23,15 @@ test:
 	pytest
 
 lint:
-	flake8 adaptive_executor tests
-	mypy adaptive_executor
+	flake8 src/adaptive_executor tests
+	mypy src/adaptive_executor
 
 format:
-	black adaptive_executor tests
-	isort adaptive_executor tests
+	black src/adaptive_executor tests
+	isort src/adaptive_executor tests
 
 type-check:
-	mypy adaptive_executor
+	mypy src/adaptive_executor
 
 docs:
 	cd docs && make html

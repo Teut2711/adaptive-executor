@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import MagicMock
 
 from adaptive_executor.policies import MultiCriterionPolicy
 from adaptive_executor.criteria import ScalingCriterion

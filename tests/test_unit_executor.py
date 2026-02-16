@@ -3,8 +3,6 @@ import threading
 import signal
 from unittest.mock import patch
 
-import pytest
-
 from adaptive_executor.executor import AdaptiveExecutor
 from adaptive_executor.policies import MultiCriterionPolicy
 
