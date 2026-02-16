@@ -1,5 +1,7 @@
 import time
 import random
+from datetime import time as dt_time
+
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import TimeCriterion, CpuCriterion, MemoryCriterion
 
@@ -23,15 +25,14 @@ def main():
 
     # Create multiple scaling criteria
     time_policy = TimeCriterion(
-        day_workers=3,  # Moderate during day
-        night_workers=12,  # More workers at night
-        night_start=20,  # 8 PM to 6 AM
-        night_end=6,
-        tz="UTC",
+        worker_count=12,  # More workers at night
+        active_start=dt_time(20, 0),  # 8 PM to 6 AM
+        active_end=dt_time(6, 0),
+        timezone="UTC",
     )
 
-    cpu_policy = CpuCriterion(threshold=75)  # Scale down when CPU > 75%
-    memory_policy = MemoryCriterion(threshold=80)  # Scale down when memory > 80%
+    cpu_policy = CpuCriterion(threshold=75, workers=3)
+    memory_policy = MemoryCriterion(threshold=80, workers=3)
 
     # Combine all criteria
     policy = MultiCriterionPolicy([time_policy, cpu_policy, memory_policy], hard_cap=15)
@@ -59,8 +60,8 @@ def main():
 
     # Monitor scaling during execution
     print("\nMonitoring worker scaling:")
-    for _ in range(10):  # Monitor for ~5 minutes
-        time.sleep(30)
+    for _ in range(3):
+        time.sleep(2)
         print(f"  Current workers: {executor.current_limit}")
 
     # Wait for completion

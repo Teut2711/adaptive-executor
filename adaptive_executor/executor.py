@@ -94,8 +94,10 @@ class AdaptiveExecutor:
                 logger.debug("Worker %s starting task: %s", thread_name, task_name)
 
                 try:
+                    # Acquire a permit so active task concurrency follows current_limit.
+                    self.permits.acquire()
                     start_time = time.monotonic()
-                    result = fn(*args, **kwargs)
+                    fn(*args, **kwargs)
                     duration = time.monotonic() - start_time
 
                     logger.debug(
@@ -104,7 +106,6 @@ class AdaptiveExecutor:
                         task_name,
                         duration,
                     )
-                    return result
                 except Exception as e:
                     logger.error(
                         "Error in worker %s while executing task %s: %s",
@@ -115,6 +116,7 @@ class AdaptiveExecutor:
                     )
                     raise
                 finally:
+                    self.permits.release()
                     self.tasks.task_done()
 
             except queue.Empty:
@@ -149,12 +151,12 @@ class AdaptiveExecutor:
         logger.info("Waiting for all tasks to complete...")
         try:
             if timeout is not None:
-                # Implement timeout using a loop with small intervals
-                # to allow for keyboard interrupts
+                # Use unfinished_tasks so we wait for execution completion,
+                # not just for the queue to be dequeued.
                 end_time = time.monotonic() + timeout
-                while not self.tasks.empty() and time.monotonic() < end_time:
+                while self.tasks.unfinished_tasks > 0 and time.monotonic() < end_time:
                     time.sleep(0.1)
-                return self.tasks.empty()
+                return self.tasks.unfinished_tasks == 0
             else:
                 self.tasks.join()
                 return True

@@ -179,7 +179,8 @@ def test_signal_handlers_registered(mock_signal, mocker):
 
 def test_controller_updates_limit(mocker):
     mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
-    mock_policy.target_workers.side_effect = [3, 5, 7]
+    # Keep returning the last value so the controller thread never exhausts side_effect.
+    mock_policy.target_workers.side_effect = [3, 5, 7, 7, 7, 7]
 
     executor = AdaptiveExecutor(
         max_workers=10,

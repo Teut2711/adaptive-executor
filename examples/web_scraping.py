@@ -1,5 +1,7 @@
 import time
 import random
+from datetime import time as dt_time
+
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import TimeCriterion
 
@@ -24,11 +26,10 @@ def main():
 
     # Aggressive during off-peak hours, respectful during business hours
     time_policy = TimeCriterion(
-        day_workers=2,  # Respectful during business hours
-        night_workers=20,  # Aggressive during off-peak
-        night_start=22,  # 10 PM to 6 AM is off-peak
-        night_end=6,
-        tz="America/New_York",
+        worker_count=20,  # Aggressive during off-peak
+        active_start=dt_time(22, 0),  # 10 PM to 6 AM is off-peak
+        active_end=dt_time(6, 0),
+        timezone="America/New_York",
     )
 
     policy = MultiCriterionPolicy([time_policy], hard_cap=25)

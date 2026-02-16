@@ -7,8 +7,10 @@ using JSON serialization. Perfect for production deployments.
 """
 
 import json
-from pathlib import Path
+from datetime import time as dt_time
+
 from adaptive_executor import AdaptiveExecutor
+from adaptive_executor.policies import MultiCriterionPolicy
 from adaptive_executor.criteria import TimeCriterion, CpuCriterion, MemoryCriterion
 
 
@@ -55,7 +57,10 @@ def main():
 
     # Define criteria for configuration
     time_criterion = TimeCriterion(
-        workers=8, time_start=22, time_end=6, tz="America/New_York"  # 10PM  # 6AM
+        worker_count=8,
+        active_start=dt_time(22, 0),
+        active_end=dt_time(6, 0),
+        timezone="America/New_York",
     )
 
     cpu_criterion = CpuCriterion(threshold=75.0, workers=4)
@@ -73,9 +78,8 @@ def main():
 
     # Create executor with loaded configuration
     # Use the first criterion for this example
-    executor = AdaptiveExecutor(
-        max_workers=10, policy=loaded_criteria[0], check_interval=30
-    )
+    policy = MultiCriterionPolicy(criteria=[loaded_criteria[0]], hard_cap=10)
+    executor = AdaptiveExecutor(max_workers=10, policy=policy, check_interval=30)
 
     print("\nConfiguration Management Example")
     print("=" * 40)
@@ -85,16 +89,13 @@ def main():
 
     # Submit some tasks
     def config_task(task_id):
-        print(f"Task {task_id} completed with {executor.current_workers} workers")
+        print(f"Task {task_id} completed with {executor.current_limit} workers")
 
     print("Submitting tasks...")
     for i in range(3):
         executor.submit(config_task, i)
 
-    # Run briefly to demonstrate
-    import time
-
-    time.sleep(5)
+    executor.join()
 
     print("\nShutting down...")
     executor.shutdown()

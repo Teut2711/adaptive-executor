@@ -2,7 +2,7 @@
 
 import logging
 import time
-from datetime import datetime
+from datetime import time as datetime_time
 
 from adaptive_executor import (
     AdaptiveExecutor,
@@ -32,16 +32,16 @@ def main():
         logger.debug("Creating time-based criteria")
         day_criterion = TimeCriterion(
             worker_count=8,  # More workers during the day
-            active_start=datetime(2026, 1, 8, 22, 0),  # 9 AM
-            active_end=datetime(2026, 1, 8, 23, 0),  # 5 PM
+            active_start=datetime_time(9, 0),
+            active_end=datetime_time(17, 0),
             timezone="Asia/Kolkata",
         )
         logger.debug("Created day criterion: %s", day_criterion)
 
         night_criterion = TimeCriterion(
             worker_count=2,  # Fewer workers at night
-            active_start=datetime(2026, 1, 9, 22, 0),  # 5 PM
-            active_end=datetime(2026, 1, 9, 23, 0),  # 9 AM
+            active_start=datetime_time(17, 0),
+            active_end=datetime_time(9, 0),
             timezone="Asia/Kolkata",
         )
         logger.debug("Created night criterion: %s", night_criterion)
@@ -62,20 +62,13 @@ def main():
 
         # Submit some tasks
         logger.info("Submitting tasks...")
-        tasks = []
         for i in range(5):
-            task = executor.submit(simple_task, i)
-            tasks.append(task)
+            executor.submit(simple_task, i)
             logger.debug("Submitted task %d", i)
 
         # Wait for tasks to complete
         logger.info("Waiting for tasks to complete...")
-        for i, task in enumerate(tasks):
-            try:
-                result = task.result()
-                logger.info("Task %d completed: %s", i, result)
-            except Exception as e:
-                logger.error("Task %d failed: %s", i, str(e), exc_info=True)
+        executor.join()
 
         logger.info(
             "All tasks completed! Current worker limit: %d", executor.current_limit

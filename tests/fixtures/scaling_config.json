@@ -1,0 +1,25 @@
+{
+  "criteria": [
+    {
+      "type": "TimeCriterion",
+      "worker_count": 8,
+      "active_start": "22:00:00",
+      "active_end": "06:00:00",
+      "timezone": "America/New_York"
+    },
+    {
+      "type": "CpuCriterion",
+      "threshold": 75.0,
+      "workers": 4
+    },
+    {
+      "type": "MemoryCriterion",
+      "threshold": 85.0,
+      "workers": 6
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created_at": "2024-01-01T00:00:00Z"
+  }
+}

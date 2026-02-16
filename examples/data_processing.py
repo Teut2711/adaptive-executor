@@ -31,8 +31,8 @@ def main():
     print("=== Data Processing with Resource-Aware Scaling ===")
 
     # Conservative scaling to protect system resources
-    cpu_policy = CpuCriterion(threshold=70)  # Scale down when CPU > 70%
-    memory_policy = MemoryCriterion(threshold=75)  # Scale down when memory > 75%
+    cpu_policy = CpuCriterion(threshold=70, workers=4)
+    memory_policy = MemoryCriterion(threshold=75, workers=4)
 
     policy = MultiCriterionPolicy(
         [cpu_policy, memory_policy], hard_cap=8  # Conservative limit
@@ -52,14 +52,9 @@ def main():
     print(f"Processing {len(data_chunks)} data chunks ({total_items} total items)...")
 
     start_time = time.time()
-    results = []
-
     # Submit all processing tasks
     for chunk in data_chunks:
-        future = executor.submit(
-            process_data_chunk, chunk["chunk_id"], chunk["data_size"]
-        )
-        results.append(future)
+        executor.submit(process_data_chunk, chunk["chunk_id"], chunk["data_size"])
 
     # Wait for completion
     executor.join()

@@ -8,6 +8,7 @@ Perfect for applications that should be more aggressive during off-peak hours.
 
 import datetime
 import logging
+import time
 from datetime import time as dt_time
 
 from adaptive_executor import (
@@ -111,29 +112,17 @@ def main():
 
         # Submit tasks to the executor
         logger.info("Submitting tasks...")
-        tasks = []
         for i in range(5):
-            task = executor.submit(process_task, i, "time_scaling")
-            tasks.append(task)
+            executor.submit(process_task, i, "time_scaling")
             logger.debug("Submitted task %d", i)
 
-        # Monitor task completion
-        logger.info("Monitoring tasks for 30 seconds (press Ctrl+C to exit early)...")
-        start_time = datetime.datetime.now()
-
-        try:
-            while (datetime.datetime.now() - start_time).total_seconds() < 30:
-                completed = sum(1 for t in tasks if t.done())
-                logger.info("Progress: %d/%d tasks completed", completed, len(tasks))
-
-                if completed == len(tasks):
-                    logger.info("All tasks completed!")
-                    break
-
-                time.sleep(5)  # Check every 5 seconds
-
-        except KeyboardInterrupt:
-            logger.info("\nReceived keyboard interrupt, shutting down...")
+        # Monitor worker limit briefly, then wait for all tasks.
+        logger.info("Monitoring worker limit...")
+        for _ in range(3):
+            logger.info("Current worker limit: %d", executor.current_limit)
+            time.sleep(2)
+        executor.join()
+        logger.info("All tasks completed!")
 
         # Log final status
         logger.info("\nFinal worker limit: %d", executor.current_limit)
@@ -148,8 +137,6 @@ def main():
 
 if __name__ == "__main__":
     try:
-        import time
-
         exit_code = main()
         exit(exit_code)
     except KeyboardInterrupt:

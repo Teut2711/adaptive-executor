@@ -6,7 +6,7 @@ This example demonstrates how to use CpuCriterion and MemoryCriterion to scale w
 based on system resource usage. Perfect for resource-intensive applications.
 """
 
-from adaptive_executor import AdaptiveExecutor
+from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import CpuCriterion, MemoryCriterion, MultiCriterion
 import random
 
@@ -20,9 +20,10 @@ def main():
     memory_criterion = MemoryCriterion(threshold=85.0, workers=6)
 
     # Combine criteria with OR logic (scale if either resource is high)
-    resource_policy = MultiCriterion(
+    resource_criterion = MultiCriterion(
         criteria=[(cpu_criterion, 4), (memory_criterion, 6)], logic="or"
     )
+    resource_policy = MultiCriterionPolicy(criteria=[resource_criterion], hard_cap=8)
 
     # Create executor with resource-based scaling
     executor = AdaptiveExecutor(
@@ -39,7 +40,7 @@ def main():
     print(
         f"Memory threshold: {memory_criterion.threshold}% -> {memory_criterion.workers} workers"
     )
-    print(f"Logic: {resource_policy.logic} (any condition met)")
+    print(f"Logic: {resource_criterion.logic} (any condition met)")
     print()
 
     # Submit some CPU-intensive tasks
@@ -47,14 +48,14 @@ def main():
         # Simulate CPU work
         for _ in range(1000000):
             _ = random.random() ** 2
-        print(f"CPU task {task_id} completed with {executor.current_workers} workers")
+        print(f"CPU task {task_id} completed with {executor.current_limit} workers")
 
     def memory_intensive_task(task_id):
         # Simulate memory work
         data = [random.random() for _ in range(100000)]
         _ = sum(data)
         print(
-            f"Memory task {task_id} completed with {executor.current_workers} workers"
+            f"Memory task {task_id} completed with {executor.current_limit} workers"
         )
 
     print("Submitting CPU and memory intensive tasks...")
@@ -62,11 +63,7 @@ def main():
         executor.submit(cpu_intensive_task, f"cpu_{i}")
         executor.submit(memory_intensive_task, f"mem_{i}")
 
-    # Let it run to show resource-based scaling
-    print("Running for 15 seconds to demonstrate resource scaling...")
-    import time
-
-    time.sleep(15)
+    executor.join()
 
     print("\nShutting down...")
     executor.shutdown()
