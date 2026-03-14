@@ -1,103 +1,16 @@
-name: CI
+name: Docs
 
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    branches:
+      - master
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  commit-style:
+  docs:
     runs-on: ubuntu-latest
-    container:
-      image: node:20-alpine
-    steps:
-      - name: Install git
-        run: apk add --no-cache git
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Mark workspace as safe for git
-        run: git config --global --add safe.directory /__w/adaptive-executor/adaptive-executor
-
-      - name: Install commitlint
-        run: npm install --no-save @commitlint/cli @commitlint/config-conventional
-
-      - name: Validate commit messages
-        run: npx commitlint --from origin/master --to HEAD --verbose
-
-  auto-format:
-    runs-on: ubuntu-latest
-    needs: commit-style
-    if: github.event_name == 'push' && github.ref != 'refs/heads/master'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Ruff fix and commit back to branch
-        run: |
-          ruff check --fix .
-          ruff format .
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add -A
-          git diff --staged --quiet || git commit -m "style: auto-fix ruff formatting" && git push
-
-  test:
-    runs-on: ubuntu-latest
-    needs: auto-format
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Ruff check
-        run: |
-          ruff check .
-          ruff format --check .
-
-      - name: Run tests
-        run: |
-          pytest --cov=adaptive_executor --cov-report=xml --cov-report=term-missing --cov-fail-under=80
-
-      - name: Upload coverage
-        if: matrix.python-version == '3.11'
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-
-  build:
-    runs-on: ubuntu-latest
-    needs: test
     steps:
       - uses: actions/checkout@v4
 
@@ -105,28 +18,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Build wheel and sdist
+      - name: Install docs dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build
-          python -m build
+          pip install -e ".[docs]"
 
-      - uses: actions/upload-artifact@v4
+      - name: Build docs
+        run: sphinx-build -b html docs/ docs/_build/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: dist
-          path: dist/
-
-  open-pr:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref != 'refs/heads/master'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Open PR to master
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "PR: ${{ github.ref_name }}"
-          body: "Automated PR for branch ${{ github.ref_name }}"
-          base: master
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
