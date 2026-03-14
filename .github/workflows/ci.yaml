@@ -172,3 +172,15 @@ jobs:
           echo "${{ github.ref_name }} $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .github/pr-opened
           git add .github/pr-opened
           git diff --staged --quiet || (git commit -m "ci: mark PR opened for ${{ github.ref_name }}" && git push)
+      
+      - name: Merge PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          AUTHOR_COMMIT=$(git log --format='%H %ae' | grep -v 'github-actions\[bot\]' | head -1 | awk '{print $1}')
+          gh pr merge "${{ github.ref_name }}" \
+            --squash \
+            --subject "$(git log -1 --format='%s' $AUTHOR_COMMIT)" \
+            --body "$(git log -1 --format='%b' $AUTHOR_COMMIT)" \
+            --delete-branch \
+            || true
