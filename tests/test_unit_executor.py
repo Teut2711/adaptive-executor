@@ -27,9 +27,7 @@ def test_initialization_with_custom_check_interval(mocker):
     mock_policy = mocker.MagicMock(spec=MultiCriterionPolicy)
     mock_policy.target_workers.return_value = 3
 
-    executor = AdaptiveExecutor(
-        max_workers=8, policy=mock_policy, check_interval=30
-    )
+    executor = AdaptiveExecutor(max_workers=8, policy=mock_policy, check_interval=30)
 
     assert executor.check_interval == 30
 

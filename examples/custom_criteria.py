@@ -86,7 +86,9 @@ def main():
     policy = MultiCriterionPolicy([load_criterion, time_criterion], hard_cap=15)
 
     executor = AdaptiveExecutor(
-        max_workers=20, policy=policy, check_interval=20  # Check every 20 seconds
+        max_workers=20,
+        policy=policy,
+        check_interval=20,  # Check every 20 seconds
     )
 
     print(f"Initial worker limit: {executor.current_limit}")
@@ -110,7 +112,7 @@ def main():
     batch_size = 5
     for i in range(0, len(tasks), batch_size):
         batch = tasks[i : i + batch_size]
-        print(f"\nSubmitting batch {i//batch_size + 1}: {len(batch)} tasks")
+        print(f"\nSubmitting batch {i // batch_size + 1}: {len(batch)} tasks")
 
         for task_id, complexity in batch:
             executor.submit(variable_task, task_id, complexity)

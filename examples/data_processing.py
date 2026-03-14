@@ -35,11 +35,14 @@ def main():
     memory_policy = MemoryCriterion(threshold=75, workers=4)
 
     policy = MultiCriterionPolicy(
-        [cpu_policy, memory_policy], hard_cap=8  # Conservative limit
+        [cpu_policy, memory_policy],
+        hard_cap=8,  # Conservative limit
     )
 
     executor = AdaptiveExecutor(
-        max_workers=12, policy=policy, check_interval=30  # Check every 30 seconds
+        max_workers=12,
+        policy=policy,
+        check_interval=30,  # Check every 30 seconds
     )
 
     # Simulate data chunks to process
@@ -64,7 +67,7 @@ def main():
 
     print(f"\nProcessing completed in {total_time:.2f} seconds")
     print(f"Total items processed: {total_processed}")
-    print(f"Processing rate: {total_processed/total_time:.0f} items/second")
+    print(f"Processing rate: {total_processed / total_time:.0f} items/second")
 
     executor.shutdown()
 

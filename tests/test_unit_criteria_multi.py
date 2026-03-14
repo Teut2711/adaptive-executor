@@ -1,6 +1,10 @@
 import pytest
 
-from adaptive_executor.criteria import ConditionalCriterion, MultiCriterion, ScalingCriterion
+from adaptive_executor.criteria import (
+    ConditionalCriterion,
+    MultiCriterion,
+    ScalingCriterion,
+)
 
 
 class StaticCriterion(ScalingCriterion):
@@ -114,7 +118,9 @@ def test_multi_criterion_from_dict_supports_nested_multi():
 def test_conditional_criterion_validation_errors():
     valid = StaticCriterion(2)
 
-    with pytest.raises(TypeError, match="condition_criterion must be a ScalingCriterion"):
+    with pytest.raises(
+        TypeError, match="condition_criterion must be a ScalingCriterion"
+    ):
         ConditionalCriterion("bad", valid, 2)
 
     with pytest.raises(TypeError, match="action_criterion must be a ScalingCriterion"):

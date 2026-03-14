@@ -35,7 +35,9 @@ class AdaptiveExecutor:
     def _register_signal_handlers(self):
         def handler(signum, frame):
             signame = (
-                signal.Signals(signum).name if hasattr(signal, "Signals") else str(signum)
+                signal.Signals(signum).name
+                if hasattr(signal, "Signals")
+                else str(signum)
             )
             logger.info("Received signal %s, shutting down...", signame)
             self.shutdown()
@@ -48,7 +50,7 @@ class AdaptiveExecutor:
             logger.warning("Failed to register signal handler for SIGINT: %s", e)
 
         # Register SIGTERM (not available on Windows)
-        if hasattr(signal, 'SIGTERM'):
+        if hasattr(signal, "SIGTERM"):
             try:
                 signal.signal(signal.SIGTERM, handler)
                 logger.debug("Registered signal handler for SIGTERM")

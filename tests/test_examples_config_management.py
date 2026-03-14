@@ -7,8 +7,12 @@ from adaptive_executor.criteria import CpuCriterion, MemoryCriterion, TimeCriter
 
 
 def _load_config_management_module():
-    module_path = Path(__file__).resolve().parents[1] / "examples" / "config_management.py"
-    spec = importlib.util.spec_from_file_location("examples.config_management", module_path)
+    module_path = (
+        Path(__file__).resolve().parents[1] / "examples" / "config_management.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "examples.config_management", module_path
+    )
     module = importlib.util.module_from_spec(spec)
     assert spec is not None and spec.loader is not None
     spec.loader.exec_module(module)
