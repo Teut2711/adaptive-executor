@@ -6,8 +6,8 @@ from datetime import time as datetime_time
 
 from adaptive_executor import (
     AdaptiveExecutor,
-    TimeCriterion,
     MultiCriterionPolicy,
+    TimeCriterion,
     setup_logger,
 )
 

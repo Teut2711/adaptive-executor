@@ -2,19 +2,14 @@
 
 from typing import Any, Dict
 
-from .base import ScalingCriterion
-from .time import TimeCriterion
-from .datetime import DateTimeCriterion
-from .cpu import CpuCriterion
-from .memory import MemoryCriterion
-from .multi import MultiCriterion, ConditionalCriterion
-
 # Also expose the modules for patching
-from . import time
-from . import datetime
-from . import cpu
-from . import memory
-from . import multi
+from . import cpu, datetime, memory, multi, time
+from .base import ScalingCriterion
+from .cpu import CpuCriterion
+from .datetime import DateTimeCriterion
+from .memory import MemoryCriterion
+from .multi import ConditionalCriterion, MultiCriterion
+from .time import TimeCriterion
 
 
 def from_dict(data: Dict[str, Any]) -> ScalingCriterion:

@@ -1,14 +1,16 @@
-import pytest
 import os
 from datetime import datetime, time
+
+import pytest
+
 from adaptive_executor.criteria import (
-    ScalingCriterion,
-    TimeCriterion,
-    DateTimeCriterion,
+    ConditionalCriterion,
     CpuCriterion,
+    DateTimeCriterion,
     MemoryCriterion,
     MultiCriterion,
-    ConditionalCriterion,
+    ScalingCriterion,
+    TimeCriterion,
 )
 
 # Get timezone from environment variable or use default
@@ -178,8 +180,8 @@ def test_time_criterion_validation():
 
 
 def test_datetime_criterion_missing_pytz():
-    import sys
     import importlib
+    import sys
 
     # Store original modules
     original_modules = sys.modules.copy()
@@ -285,8 +287,8 @@ def test_datetime_criterion_max_workers_exception_handling(mocker):
 
 
 def test_time_criterion_missing_pytz():
-    import sys
     import importlib
+    import sys
 
     # Store original modules
     original_modules = sys.modules.copy()
@@ -334,6 +336,7 @@ def test_time_criterion_missing_pytz():
 )
 def test_time_criterion_scaling(hour, expected, mocker):
     import datetime
+
     import pytz
 
     # Create a timezone-aware datetime
@@ -359,8 +362,8 @@ def test_cpu_criterion_initialization():
 
 
 def test_cpu_criterion_missing_psutil():
-    import sys
     import importlib
+    import sys
 
     # Store original modules
     original_modules = sys.modules.copy()
@@ -427,8 +430,8 @@ def test_memory_criterion_initialization():
 
 
 def test_memory_criterion_missing_psutil():
-    import sys
     import importlib
+    import sys
 
     # Store original modules
     original_modules = sys.modules.copy()
@@ -611,7 +614,8 @@ def test_multi_criterion_or_logic(mocker):
     )
     memory_crit = MemoryCriterion(threshold=80.0, workers=6)
 
-    # Multi-criterion with OR logic - should return workers from first satisfied criterion
+    # Multi-criterion with OR logic - should return workers from first
+    # satisfied criterion
     multi = MultiCriterion(criteria=[(time_crit, 4), (memory_crit, 6)], logic="or")
 
     # Mock time in range but memory below threshold

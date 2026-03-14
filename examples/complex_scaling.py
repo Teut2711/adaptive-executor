@@ -9,7 +9,7 @@ Perfect for applications that need multiple conditions to be met simultaneously.
 from datetime import time as dt_time
 
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
-from adaptive_executor.criteria import TimeCriterion, MemoryCriterion, MultiCriterion
+from adaptive_executor.criteria import MemoryCriterion, MultiCriterion, TimeCriterion
 
 
 def main():

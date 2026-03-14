@@ -10,9 +10,9 @@ from datetime import time as dt_time
 
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import (
-    TimeCriterion,
-    MemoryCriterion,
     ConditionalCriterion,
+    MemoryCriterion,
+    TimeCriterion,
 )
 
 

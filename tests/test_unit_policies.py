@@ -1,7 +1,7 @@
 import pytest
 
-from adaptive_executor.policies import MultiCriterionPolicy
 from adaptive_executor.criteria import ScalingCriterion
+from adaptive_executor.policies import MultiCriterionPolicy
 
 
 def test_initialization(mocker):

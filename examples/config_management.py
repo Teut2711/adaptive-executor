@@ -10,8 +10,8 @@ import json
 from datetime import time as dt_time
 
 from adaptive_executor import AdaptiveExecutor
+from adaptive_executor.criteria import CpuCriterion, MemoryCriterion, TimeCriterion
 from adaptive_executor.policies import MultiCriterionPolicy
-from adaptive_executor.criteria import TimeCriterion, CpuCriterion, MemoryCriterion
 
 
 def save_configuration(criteria, config_file):

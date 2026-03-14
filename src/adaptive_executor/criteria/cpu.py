@@ -3,8 +3,8 @@
 import importlib.util
 from typing import Any, Dict, Type
 
-from .base import ScalingCriterion
 from ..utils import get_logger
+from .base import ScalingCriterion
 
 logger = get_logger(__name__)
 
@@ -28,7 +28,10 @@ class CpuCriterion(ScalingCriterion):
             ValueError: If threshold is not between 0 and 100 or workers < 1
         """
         if not importlib.util.find_spec("psutil"):
-            error_msg = "CpuCriterion requires 'psutil' package. Install with: pip install adaptive-executor[cpu]"
+            error_msg = (
+                "CpuCriterion requires 'psutil' package. "
+                "Install with: pip install adaptive-executor[cpu]"
+            )
             logger.error(error_msg)
             raise ImportError(error_msg)
 

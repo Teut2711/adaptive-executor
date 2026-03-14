@@ -69,7 +69,8 @@ def test_executor_respects_real_runtime_concurrency_limit():
 @pytest.mark.integration
 def test_executor_parallel_io_is_faster_than_single_worker():
     # With I/O-bound sleep tasks, 4 workers should finish significantly faster than 1.
-    # Expected ratio is near 4x in ideal conditions; we keep a conservative bound for CI noise.
+    # Expected ratio is near 4x in ideal conditions; we keep a conservative bound for CI
+    # noise.
     single_worker_time = _run_io_batch(worker_limit=1)
     four_worker_time = _run_io_batch(worker_limit=4)
 

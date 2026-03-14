@@ -6,9 +6,10 @@ This example demonstrates how to use CpuCriterion and MemoryCriterion to scale w
 based on system resource usage. Perfect for resource-intensive applications.
 """
 
+import random
+
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import CpuCriterion, MemoryCriterion, MultiCriterion
-import random
 
 
 def main():
@@ -38,7 +39,8 @@ def main():
         f"CPU threshold: {cpu_criterion.threshold}% -> {cpu_criterion.workers} workers"
     )
     print(
-        f"Memory threshold: {memory_criterion.threshold}% -> {memory_criterion.workers} workers"
+        f"Memory threshold: {memory_criterion.threshold}% -> "
+        f"{memory_criterion.workers} workers"
     )
     print(f"Logic: {resource_criterion.logic} (any condition met)")
     print()

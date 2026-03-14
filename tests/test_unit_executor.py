@@ -1,6 +1,6 @@
-import time
-import threading
 import signal
+import threading
+import time
 from unittest.mock import patch
 
 from adaptive_executor.executor import AdaptiveExecutor

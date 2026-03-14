@@ -2,16 +2,14 @@ name: Publish
 
 on:
   push:
-    tags:
-      - "v*"
-
-permissions:
-  id-token: write
+    branches: [master]
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
