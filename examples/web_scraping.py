@@ -35,7 +35,9 @@ def main():
     policy = MultiCriterionPolicy([time_policy], hard_cap=25)
 
     executor = AdaptiveExecutor(
-        max_workers=30, policy=policy, check_interval=60  # Check every minute
+        max_workers=30,
+        policy=policy,
+        check_interval=60,  # Check every minute
     )
 
     # Generate URLs to scrape
@@ -55,7 +57,7 @@ def main():
 
     total_time = time.time() - start_time
     print(f"\nScraping completed in {total_time:.2f} seconds")
-    print(f"Average time per URL: {total_time/len(urls):.2f}s")
+    print(f"Average time per URL: {total_time / len(urls):.2f}s")
 
     executor.shutdown()
 

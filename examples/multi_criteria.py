@@ -38,7 +38,9 @@ def main():
     policy = MultiCriterionPolicy([time_policy, cpu_policy, memory_policy], hard_cap=15)
 
     executor = AdaptiveExecutor(
-        max_workers=20, policy=policy, check_interval=45  # Check every 45 seconds
+        max_workers=20,
+        policy=policy,
+        check_interval=45,  # Check every 45 seconds
     )
 
     print(f"Initial worker limit: {executor.current_limit}")
