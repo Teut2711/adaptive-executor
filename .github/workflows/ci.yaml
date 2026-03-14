@@ -118,3 +118,11 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_build/html
+      - name: Open PR if not exists
+        if: github.event_name == 'push' && github.ref != 'refs/heads/master'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "PR: ${{ github.ref_name }}"
+          body: "Automated PR for branch ${{ github.ref_name }}"
+          base: master
