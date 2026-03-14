@@ -20,6 +20,9 @@ jobs:
       image: node:20-alpine
 
     steps:
+      - name: Install git
+        run: apk add --no-cache git
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
