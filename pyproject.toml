@@ -50,7 +50,11 @@ dev = [
     "pytz>=2023.3",
     "psutil>=5.9.0",
 ]
-
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+]
 [project.urls]
 Homepage = "https://github.com/Teut2711/adaptive-executor"
 Documentation = "https://Teut2711.github.io/adaptive-executor"
