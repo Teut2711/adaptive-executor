@@ -9,6 +9,12 @@ permissions:
   contents: write
   pull-requests: write
 
+x-git-config: &git-config
+  name: Configure git
+  run: |
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+
 jobs:
   commit-style:
     runs-on: ubuntu-latest
@@ -49,11 +55,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
+      - *git-config
+
       - name: Ruff fix and commit back to branch
         run: |
           ruff check --fix .
           ruff format .
-     
+          git add -A
+          git diff --staged --quiet || (git commit -m "style: auto-fix ruff formatting" && git push)
+
   test:
     runs-on: ubuntu-latest
     needs: auto-format
@@ -63,6 +73,8 @@ jobs:
         python-version: ["3.9", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-python@v5
         with:
@@ -91,11 +103,23 @@ jobs:
           flags: unittests
           name: codecov-umbrella
 
+      - *git-config
+
+      - name: Commit test status badge
+        if: matrix.python-version == '3.11'
+        run: |
+          mkdir -p .badges
+          echo "passed" > .badges/tests-passed
+          git add .badges/tests-passed
+          git diff --staged --quiet || (git commit -m "ci: update test status badge" && git push)
+
   build:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-python@v5
         with:
@@ -107,12 +131,19 @@ jobs:
           pip install build
           python -m build
 
-      - name: Commit and push changes to branch
+      - *git-config
+
+      - name: Amend CI commit with build changes if any
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --staged --quiet || (git commit -m "chore: ci build artifacts" && git push)
+          if ! git diff --staged --quiet; then
+            if git log -1 --format='%ae' | grep -q 'github-actions\[bot\]'; then
+              git commit --amend --no-edit
+            else
+              git commit -m "chore: ci build changes"
+            fi
+            git push --force-with-lease
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
@@ -125,12 +156,25 @@ jobs:
     if: github.event_name == 'push' && github.ref != 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Open PR to master
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "PR: ${{ github.ref_name }}"
-          body: "Automated PR for branch ${{ github.ref_name }}"
-          base: master
-          branch: ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "PR: ${{ github.ref_name }}" \
+            --body "Automated PR for branch ${{ github.ref_name }}" \
+            --base master \
+            --head "${{ github.ref_name }}" \
+            || true
+
+      - *git-config
+
+      - name: Commit PR marker
+        run: |
+          mkdir -p .github
+          echo "${{ github.ref_name }} $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .github/pr-opened
+          git add .github/pr-opened
+          git diff --staged --quiet || (git commit -m "ci: mark PR opened for ${{ github.ref_name }}" && git push)
