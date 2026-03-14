@@ -130,3 +130,4 @@ jobs:
           title: "PR: ${{ github.ref_name }}"
           body: "Automated PR for branch ${{ github.ref_name }}"
           base: master
+          branch: ${{ github.ref_name }}
