@@ -38,9 +38,7 @@ def main():
     policy = MultiCriterionPolicy(criteria=[conditional_policy], hard_cap=6)
 
     # Create executor with conditional scaling
-    executor = AdaptiveExecutor(
-        max_workers=6, policy=policy, check_interval=20
-    )
+    executor = AdaptiveExecutor(max_workers=6, policy=policy, check_interval=20)
 
     print("Conditional Scaling Example")
     print("=" * 40)

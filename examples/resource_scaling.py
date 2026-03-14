@@ -54,9 +54,7 @@ def main():
         # Simulate memory work
         data = [random.random() for _ in range(100000)]
         _ = sum(data)
-        print(
-            f"Memory task {task_id} completed with {executor.current_limit} workers"
-        )
+        print(f"Memory task {task_id} completed with {executor.current_limit} workers")
 
     print("Submitting CPU and memory intensive tasks...")
     for i in range(3):

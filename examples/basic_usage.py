@@ -56,7 +56,9 @@ def main():
         # Create the executor with our policy
         logger.debug("Creating AdaptiveExecutor with max_workers=10, check_interval=5")
         executor = AdaptiveExecutor(
-            max_workers=10, policy=policy, check_interval=5  # Check every 5 seconds
+            max_workers=10,
+            policy=policy,
+            check_interval=5,  # Check every 5 seconds
         )
         logger.info("Executor created and running")
 

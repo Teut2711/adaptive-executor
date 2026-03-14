@@ -204,11 +204,13 @@ def test_datetime_criterion_missing_pytz():
         # Reimport the module
         import adaptive_executor.criteria as criteria_module
 
-        with pytest.raises(ImportError, match="DateTimeCriterion requires 'pytz' package"):
+        with pytest.raises(
+            ImportError, match="DateTimeCriterion requires 'pytz' package"
+        ):
             criteria_module.DateTimeCriterion(
-                worker_count=8, 
-                active_start=datetime(2026, 1, 1, 22, 0), 
-                active_end=datetime(2026, 1, 1, 3, 0)
+                worker_count=8,
+                active_start=datetime(2026, 1, 1, 22, 0),
+                active_end=datetime(2026, 1, 1, 3, 0),
             )
     finally:
         # Restore everything
@@ -254,7 +256,9 @@ def test_datetime_criterion_scaling(day, hour, minute, expected, mocker):
     # Mock the datetime class used inside the criterion module.
     mock_datetime_module = mocker.MagicMock()
     mock_datetime_module.now.return_value = mock_now
-    mocker.patch("adaptive_executor.criteria.datetime.datetime.datetime", mock_datetime_module)
+    mocker.patch(
+        "adaptive_executor.criteria.datetime.datetime.datetime", mock_datetime_module
+    )
 
     result = criterion.max_workers()
     assert result == expected
@@ -271,8 +275,10 @@ def test_datetime_criterion_max_workers_exception_handling(mocker):
     # Mock datetime.datetime.now to raise an exception
     mock_datetime_module = mocker.MagicMock()
     mock_datetime_module.now.side_effect = Exception("Time error")
-    mocker.patch("adaptive_executor.criteria.datetime.datetime.datetime", mock_datetime_module)
-    
+    mocker.patch(
+        "adaptive_executor.criteria.datetime.datetime.datetime", mock_datetime_module
+    )
+
     # Should return 1 (fallback) when exception occurs
     result = criterion.max_workers()
     assert result == 1
