@@ -1,16 +1,16 @@
-from .executor import AdaptiveExecutor
-from .policies import MultiCriterionPolicy
 from .criteria import (
-    ScalingCriterion,
-    TimeCriterion,
-    DateTimeCriterion,
+    ConditionalCriterion,
     CpuCriterion,
+    DateTimeCriterion,
     MemoryCriterion,
     MultiCriterion,
-    ConditionalCriterion,
+    ScalingCriterion,
+    TimeCriterion,
     from_dict,
 )
-from .utils import get_logger, setup_logger, logger
+from .executor import AdaptiveExecutor
+from .policies import MultiCriterionPolicy
+from .utils import get_logger, logger, setup_logger
 
 __all__ = [
     "AdaptiveExecutor",

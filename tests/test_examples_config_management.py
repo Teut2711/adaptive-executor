@@ -1,7 +1,7 @@
 import importlib.util
-from pathlib import Path
-from datetime import time as dt_time
 import uuid
+from datetime import time as dt_time
+from pathlib import Path
 
 from adaptive_executor.criteria import CpuCriterion, MemoryCriterion, TimeCriterion
 

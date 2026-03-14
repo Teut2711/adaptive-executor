@@ -1,10 +1,10 @@
 """
 Time-based Scaling Example
 =========================
-
-This example demonstrates how to use TimeCriterion to scale workers based on time of day.
-Perfect for applications that should be more aggressive during off-peak hours.
 """
+# This example demonstrates how to use TimeCriterion to scale workers 
+# based on time of day. Perfect for applications that should be more 
+# aggressive during off-peak hours.
 
 import datetime
 import logging
@@ -13,8 +13,8 @@ from datetime import time as dt_time
 
 from adaptive_executor import (
     AdaptiveExecutor,
-    TimeCriterion,
     MultiCriterionPolicy,
+    TimeCriterion,
     setup_logger,
 )
 

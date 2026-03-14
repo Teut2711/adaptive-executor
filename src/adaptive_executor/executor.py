@@ -1,9 +1,9 @@
 """Adaptive executor implementation with dynamic worker scaling."""
 
-import threading
 import queue
-import time
 import signal
+import threading
+import time
 from typing import Callable
 
 from .utils import get_logger

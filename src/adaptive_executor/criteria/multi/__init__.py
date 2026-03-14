@@ -1,7 +1,7 @@
 """Multi-criteria scaling implementations."""
 
-from .multi import MultiCriterion
 from .conditional import ConditionalCriterion
+from .multi import MultiCriterion
 
 __all__ = ["MultiCriterion", "ConditionalCriterion"]
 

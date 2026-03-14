@@ -6,8 +6,8 @@ from typing import Any, Dict
 
 import pytz
 
-from .base import ScalingCriterion
 from ..utils import get_logger
+from .base import ScalingCriterion
 
 logger = get_logger(__name__)
 
@@ -42,7 +42,10 @@ class TimeCriterion(ScalingCriterion):
         """
 
         if not importlib.util.find_spec("pytz"):
-            error_msg = "TimeCriterion requires 'pytz' package. Install with: pip install adaptive-executor[time]"
+            error_msg = (
+                "TimeCriterion requires 'pytz' package. "
+                "Install with: pip install adaptive-executor[time]"
+            )
             logger.error(error_msg)
             raise ImportError(error_msg)
 
@@ -109,7 +112,8 @@ class TimeCriterion(ScalingCriterion):
                 return self.worker_count
             else:
                 logger.debug(
-                    "TimeCriterion: Outside active time %s-%s, current time %s -> 1 worker",
+                    "TimeCriterion: Outside active time %s-%s, "
+                    "current time %s -> 1 worker",
                     self.active_start.strftime("%H:%M"),
                     self.active_end.strftime("%H:%M"),
                     current_time.strftime("%H:%M"),

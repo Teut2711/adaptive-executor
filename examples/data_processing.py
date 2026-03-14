@@ -1,5 +1,6 @@
-import time
 import random
+import time
+
 from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy
 from adaptive_executor.criteria import CpuCriterion, MemoryCriterion
 

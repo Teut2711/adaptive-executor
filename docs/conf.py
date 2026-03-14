@@ -28,18 +28,30 @@ html_show_sourcelink = False
 html_show_sphinx = False
 
 html_meta_tags = {
-    "description": "Adaptive Executor - Python thread pool executor with dynamic scaling policies based on time, CPU, and memory usage",
-    "keywords": "threading, concurrency, executor, adaptive, scaling, scheduler, thread, pool, executor",
+    "description": (
+        "Adaptive Executor - Python thread pool executor with dynamic "
+        "scaling policies based on time, CPU, and memory usage"
+    ),
+    "keywords": (
+        "threading, concurrency, executor, adaptive, scaling, "
+        "scheduler, thread, pool, executor"
+    ),
     "author": "Teut2711",
     "viewport": "width=device-width, initial-scale=1.0",
     "og:title": "Adaptive Executor - Dynamic Thread Pool Scaling",
-    "og:description": "Python library for adaptive thread pool execution with intelligent scaling based on system resources and time-based policies",
+    "og:description": (
+        "Python library for adaptive thread pool execution with "
+        "intelligent scaling based on system resources and time-based policies"
+    ),
     "og:url": "https://Teut2711.github.io/adaptive-executor",
     "og:type": "website",
     "og:site_name": "Adaptive Executor",
     "twitter:card": "summary_large_image",
     "twitter:title": "Adaptive Executor - Dynamic Thread Pool Scaling",
-    "twitter:description": "Python library for adaptive thread pool execution with intelligent scaling",
+    "twitter:description": (
+        "Python library for adaptive thread pool "
+        "execution with intelligent scaling"
+    ),
     "robots": "index, follow",
     "googlebot": "index, follow",
 }

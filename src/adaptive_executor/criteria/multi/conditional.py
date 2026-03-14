@@ -2,8 +2,8 @@
 
 from typing import Any, Dict
 
-from ..base import ScalingCriterion
 from ...utils import get_logger
+from ..base import ScalingCriterion
 
 logger = get_logger(__name__)
 
@@ -48,7 +48,8 @@ class ConditionalCriterion(ScalingCriterion):
         self.workers = workers
 
         logger.debug(
-            "Initialized ConditionalCriterion: condition_type=%s, action_type=%s, workers=%d",
+            "Initialized ConditionalCriterion: condition_type=%s, "
+            "action_type=%s, workers=%d",
             type(condition_criterion).__name__,
             type(action_criterion).__name__,
             workers,
@@ -70,7 +71,8 @@ class ConditionalCriterion(ScalingCriterion):
             else:
                 action_workers = self.action_criterion.max_workers()
                 logger.debug(
-                    "ConditionalCriterion: Condition not met, using action criterion with %d workers",
+                    "ConditionalCriterion: Condition not met, "
+                    "using action criterion with %d workers",
                     action_workers,
                 )
                 return action_workers
@@ -107,7 +109,8 @@ class ConditionalCriterion(ScalingCriterion):
         """Create a ConditionalCriterion from a dictionary.
 
         Args:
-            data: Dictionary containing 'condition_criterion', 'action_criterion', and 'workers' keys
+            data: Dictionary containing 'condition_criterion', 
+                'action_criterion', and 'workers' keys
 
         Returns:
             ConditionalCriterion: A new instance of ConditionalCriterion

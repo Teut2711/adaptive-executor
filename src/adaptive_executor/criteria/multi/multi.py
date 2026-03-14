@@ -2,12 +2,12 @@
 
 from typing import Any, Dict, List, Tuple
 
-from ..base import ScalingCriterion
-from ..time import TimeCriterion
-from ..datetime import DateTimeCriterion
-from ..cpu import CpuCriterion
-from ..memory import MemoryCriterion
 from ...utils import get_logger
+from ..base import ScalingCriterion
+from ..cpu import CpuCriterion
+from ..datetime import DateTimeCriterion
+from ..memory import MemoryCriterion
+from ..time import TimeCriterion
 
 logger = get_logger(__name__)
 
@@ -69,7 +69,8 @@ class MultiCriterion(ScalingCriterion):
                 for criterion, workers in self.criteria:
                     if criterion.max_workers() == 1:
                         logger.debug(
-                            "MultiCriterion (AND): Criterion returned 1 worker, returning 1"
+                            "MultiCriterion (AND): Criterion returned 1 "
+                            "worker, returning 1"
                         )
                         return 1
                 # All conditions met, return maximum workers from all criteria

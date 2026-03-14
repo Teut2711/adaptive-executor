@@ -1,9 +1,9 @@
-import threading
 import datetime
+import threading
 
 import pytest
 
-from adaptive_executor import AdaptiveExecutor, MultiCriterionPolicy, DateTimeCriterion
+from adaptive_executor import AdaptiveExecutor, DateTimeCriterion, MultiCriterionPolicy
 
 
 @pytest.mark.integration
