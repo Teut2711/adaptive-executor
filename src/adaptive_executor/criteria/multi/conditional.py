@@ -109,7 +109,7 @@ class ConditionalCriterion(ScalingCriterion):
         """Create a ConditionalCriterion from a dictionary.
 
         Args:
-            data: Dictionary containing 'condition_criterion', 
+            data: Dictionary containing 'condition_criterion',
                 'action_criterion', and 'workers' keys
 
         Returns:
