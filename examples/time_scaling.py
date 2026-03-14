@@ -2,8 +2,8 @@
 Time-based Scaling Example
 =========================
 """
-# This example demonstrates how to use TimeCriterion to scale workers
-# based on time of day. Perfect for applications that should be more
+# This example demonstrates how to use TimeCriterion to scale workers 
+# based on time of day. Perfect for applications that should be more 
 # aggressive during off-peak hours.
 
 import datetime

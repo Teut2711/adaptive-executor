@@ -49,7 +49,8 @@ html_meta_tags = {
     "twitter:card": "summary_large_image",
     "twitter:title": "Adaptive Executor - Dynamic Thread Pool Scaling",
     "twitter:description": (
-        "Python library for adaptive thread pool execution with intelligent scaling"
+        "Python library for adaptive thread pool "
+        "execution with intelligent scaling"
     ),
     "robots": "index, follow",
     "googlebot": "index, follow",
