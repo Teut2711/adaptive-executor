@@ -13,27 +13,15 @@ permissions:
 
 jobs:
 
-  commit-style:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Validate commit messages (Conventional Commits)
-        run: |
-          regex='^(feat|fix|docs|style|refactor|test|chore|ci|build|perf)(\(.+\))?: .+'
-          commits=$(git log origin/master..HEAD --pretty=format:%s || git log -n 1 --pretty=format:%s)
-
-          for commit in $commits; do
-            if ! [[ "$commit" =~ $regex ]]; then
-              echo "❌ Invalid commit message:"
-              echo "$commit"
-              exit 1
-            fi
-          done
-
+commit-style:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - run: npm install --no-save @commitlint/cli @commitlint/config-conventional
+    - run: npx commitlint --from origin/master --to HEAD --verbose
   format:
     runs-on: ubuntu-latest
     needs: commit-style
