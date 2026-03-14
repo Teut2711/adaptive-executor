@@ -9,12 +9,6 @@ permissions:
   contents: write
   pull-requests: write
 
-x-git-config: &git-config
-  name: Configure git
-  run: |
-    git config user.name "github-actions[bot]"
-    git config user.email "github-actions[bot]@users.noreply.github.com"
-
 jobs:
   commit-style:
     runs-on: ubuntu-latest
@@ -55,12 +49,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - *git-config
-
       - name: Ruff fix and commit back to branch
         run: |
           ruff check --fix .
           ruff format .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --staged --quiet || (git commit -m "style: auto-fix ruff formatting" && git push)
 
@@ -103,11 +97,11 @@ jobs:
           flags: unittests
           name: codecov-umbrella
 
-      - *git-config
-
       - name: Commit test status badge
         if: matrix.python-version == '3.11'
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p .badges
           echo "passed" > .badges/tests-passed
           git add .badges/tests-passed
@@ -131,10 +125,10 @@ jobs:
           pip install build
           python -m build
 
-      - *git-config
-
       - name: Amend CI commit with build changes if any
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           if ! git diff --staged --quiet; then
             if git log -1 --format='%ae' | grep -q 'github-actions\[bot\]'; then
@@ -170,10 +164,10 @@ jobs:
             --head "${{ github.ref_name }}" \
             || true
 
-      - *git-config
-
       - name: Commit PR marker
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p .github
           echo "${{ github.ref_name }} $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .github/pr-opened
           git add .github/pr-opened
