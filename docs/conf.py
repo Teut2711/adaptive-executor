@@ -1,14 +1,43 @@
 import os
-import sys
 import re
+import sys
 from pathlib import Path
 
 sys.path.insert(0, os.path.abspath("../src"))
 
 def get_version():
-    from importlib.metadata import version
-    return version("adaptive-executor")
+    """
+    Retrieves the version from installed metadata or pyproject.toml.
+    Ensures the docs don't crash if the package isn't installed in CI.
+    """
+    # 1. Try metadata (works if 'pip install .' was run in CI)
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+        return version("adaptive-executor")
+    except (ImportError, PackageNotFoundError):
+        pass
 
+    # 2. Fallback: Parse pyproject.toml directly
+    try:
+        # Locate pyproject.toml relative to this conf.py file
+        # (Assuming: /repo/docs/conf.py -> /repo/pyproject.toml)
+        pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+        if pyproject_path.exists():
+            with open(pyproject_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                # Look for version = "x.y.z" inside the [project] section
+                match = re.search(
+                    r'\[project\].*?version\s*=\s*"(.*?)"',
+                    content,
+                    re.DOTALL,
+                )
+                if match:
+                    return match.group(1)
+    except Exception as e:
+        # If we get here, something is fundamentally wrong with the file path
+        print(f"Warning: Could not parse pyproject.toml: {e}")
+        
+    return "0.0.0-dev" # Distinctive fallback so you know it's failing
 
 project = "Adaptive Executor"
 copyright = "2026, Teut2711"
