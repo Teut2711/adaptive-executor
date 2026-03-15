@@ -1,33 +1,17 @@
 import os
 import sys
 import re
+from pathlib import Path
 
 sys.path.insert(0, os.path.abspath("../src"))
 
 def get_version():
-    # 1. Try getting version from installed package metadata
-    try:
-        from importlib.metadata import version
-        return version("adaptive-executor")
-    except Exception:
-        pass
+    from importlib.metadata import version
+    return version("adaptive-executor")
 
-    # 2. Fallback to manual parsing of pyproject.toml
-    try:
-        import re
-        with open(os.path.abspath("../pyproject.toml"), "r", encoding="utf-8") as f:
-            content = f.read()
-            project_section = re.search(r"\[project\](.*?)(?=\n\[|$)", content, re.DOTALL)
-            if project_section:
-                version_match = re.search(r'version\s*=\s*"(.*?)"', project_section.group(1))
-                if version_match:
-                    return version_match.group(1)
-    except Exception:
-        pass
-    return "0.1.0"
 
 project = "Adaptive Executor"
-copyright = "2024, Teut2711"
+copyright = "2026, Teut2711"
 author = "Teut2711"
 release = get_version()
 version = ".".join(release.split(".")[:2])
@@ -44,6 +28,13 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+
+html_theme_options = {
+    "display_version": True,
+    "prev_next_buttons_location": "bottom",
+    "style_external_links": False,
+    "vcs_pageview_mode": "blob",
+}
 
 html_baseurl = os.environ.get("PAGES_URL", "")
 
@@ -84,8 +75,8 @@ html_context = {
     "display_github": True,
     "github_user": "Teut2711",
     "github_repo": "adaptive-executor",
-    "github_version": "master/",
-    "conf_py_path": "/docs/",
+    "github_version": "master/",      # Added trailing slash
+    "conf_py_path": "docs/",          # Standard path
 }
 
 autodoc_default_options = {
