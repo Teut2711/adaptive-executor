@@ -104,8 +104,8 @@ html_context = {
     "display_github": True,
     "github_user": "Teut2711",
     "github_repo": "adaptive-executor",
-    "github_version": "master/",      # Added trailing slash
-    "conf_py_path": "docs/",          # Standard path
+    "github_version": "master",      # No trailing slash
+    "conf_py_path": "docs/",          # Matches folder name
 }
 
 autodoc_default_options = {
