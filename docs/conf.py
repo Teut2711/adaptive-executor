@@ -1,12 +1,36 @@
 import os
 import sys
+import re
 
 sys.path.insert(0, os.path.abspath("../src"))
+
+def get_version():
+    # 1. Try getting version from installed package metadata
+    try:
+        from importlib.metadata import version
+        return version("adaptive-executor")
+    except Exception:
+        pass
+
+    # 2. Fallback to manual parsing of pyproject.toml
+    try:
+        import re
+        with open(os.path.abspath("../pyproject.toml"), "r", encoding="utf-8") as f:
+            content = f.read()
+            project_section = re.search(r"\[project\](.*?)(?=\n\[|$)", content, re.DOTALL)
+            if project_section:
+                version_match = re.search(r'version\s*=\s*"(.*?)"', project_section.group(1))
+                if version_match:
+                    return version_match.group(1)
+    except Exception:
+        pass
+    return "0.1.0"
 
 project = "Adaptive Executor"
 copyright = "2024, Teut2711"
 author = "Teut2711"
-release = "0.1.0"
+release = get_version()
+version = ".".join(release.split(".")[:2])
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -60,7 +84,7 @@ html_context = {
     "display_github": True,
     "github_user": "Teut2711",
     "github_repo": "adaptive-executor",
-    "github_version": "master",
+    "github_version": "master/",
     "conf_py_path": "/docs/",
 }
 
