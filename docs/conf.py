@@ -66,6 +66,10 @@ html_theme_options = {
         "json_url": "_static/switcher.json",
         "version_match": version,
     },
+    "favicons": [
+        {"rel": "icon", "sizes": "16x16", "href": "https://github.githubassets.com/favicons/favicon.ico"},
+        {"rel": "icon", "sizes": "32x32", "href": "https://github.githubassets.com/favicons/favicon.ico"},
+    ],
     "icon_links": [
         {
             "name": "GitHub",
