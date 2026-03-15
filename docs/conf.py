@@ -61,6 +61,7 @@ html_context = {
     "github_user": "Teut2711",
     "github_repo": "adaptive-executor",
     "github_version": "master",
+    "conf_py_path": "/docs/",
 }
 
 autodoc_default_options = {
