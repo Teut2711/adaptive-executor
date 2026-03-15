@@ -139,6 +139,11 @@ logging.getLogger('adaptive_executor').propagate = False
 
 Full documentation is available at [https://Teut2711.github.io/adaptive-executor](https://Teut2711.github.io/adaptive-executor)
 
+## Pypi
+
+https://pypi.org/project/adaptive-executor/
+
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
