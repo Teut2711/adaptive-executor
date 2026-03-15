@@ -106,6 +106,12 @@ html_context = {
     "github_repo": "adaptive-executor",
     "github_version": "master",      # No trailing slash
     "conf_py_path": "docs/",          # Matches folder name
+    "current_version": version,
+    "versions": [
+        ("latest", "/en/latest/"),
+        ("stable", "/en/stable/"),
+        ("0.1", "/en/0.1/"),
+    ],
 }
 
 autodoc_default_options = {
