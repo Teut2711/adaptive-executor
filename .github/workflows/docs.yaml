@@ -6,17 +6,28 @@ on:
       - master
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  docs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Better for versioning tools
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -27,19 +38,18 @@ jobs:
           pip install -e .
           pip install sphinx pydata-sphinx-theme myst-parser
 
-      - name: Generate switcher.json
-        run: |
-          VERSION_SHORT=$(python -c "import tomllib; d=tomllib.load(open('pyproject.toml','rb')); v=d['project']['version']; print('.'.join(v.split('.')[:2]))")
-          mkdir -p docs/_static
-          cat > docs/_static/switcher.json << EOF
-          [{"name": "$VERSION_SHORT (latest)", "version": "$VERSION_SHORT", "url": "/"}]
-          EOF
 
-      - name: Build docs
-        run: sphinx-build -E -b html docs/ docs/_build/html
+      - name: Build documentation
+        run: sphinx-build -E -b html docs docs/_build/html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/_build/html
+        id: deployment
+        uses: actions/deploy-pages@v4
