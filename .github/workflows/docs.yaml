@@ -29,9 +29,10 @@ jobs:
 
       - name: Generate switcher.json
         run: |
-          VERSION=$(python -c "import tomllib; d=tomllib.load(open('pyproject.toml','rb')); print(d['project']['version'])")
+          VERSION_SHORT=$(python -c "import tomllib; d=tomllib.load(open('pyproject.toml','rb')); v=d['project']['version']; print('.'.join(v.split('.')[:2]))")
+          mkdir -p docs/_static
           cat > docs/_static/switcher.json << EOF
-          [{"name": "$VERSION (latest)", "version": "$VERSION", "url": "https://teut2711.github.io/adaptive-executor/"}]
+          [{"name": "$VERSION_SHORT (latest)", "version": "$VERSION_SHORT", "url": "/"}]
           EOF
 
       - name: Build docs
