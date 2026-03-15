@@ -55,63 +55,36 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
-html_theme_options = {
-    "display_version": True,
-    "prev_next_buttons_location": "bottom",
-    "style_external_links": False,
-    "vcs_pageview_mode": "blob",
-}
+html_baseurl = os.environ.get("PAGES_URL", "https://teut2711.github.io/adaptive-executor/")
 
-html_baseurl = os.environ.get("PAGES_URL", "")
+html_theme_options = {
+    "use_edit_page_button": True,
+    "navbar_end": ["version-switcher", "navbar-icon-links"],
+    "switcher": {
+        "json_url": "https://teut2711.github.io/adaptive-executor/_static/switcher.json",
+        "version_match": version,
+    },
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/Teut2711/adaptive-executor",
+            "icon": "fa-brands fa-github",
+        }
+    ],
+}
 
 html_copy_source = False
 html_show_sourcelink = False
 html_show_sphinx = False
 
-html_meta_tags = {
-    "description": (
-        "Adaptive Executor - Python thread pool executor with dynamic "
-        "scaling policies based on time, CPU, and memory usage"
-    ),
-    "keywords": (
-        "threading, concurrency, executor, adaptive, scaling, "
-        "scheduler, thread, pool, executor"
-    ),
-    "author": "Teut2711",
-    "viewport": "width=device-width, initial-scale=1.0",
-    "og:title": "Adaptive Executor - Dynamic Thread Pool Scaling",
-    "og:description": (
-        "Python library for adaptive thread pool execution with "
-        "intelligent scaling based on system resources and time-based policies"
-    ),
-    "og:url": "https://Teut2711.github.io/adaptive-executor",
-    "og:type": "website",
-    "og:site_name": "Adaptive Executor",
-    "twitter:card": "summary_large_image",
-    "twitter:title": "Adaptive Executor - Dynamic Thread Pool Scaling",
-    "twitter:description": (
-        "Python library for adaptive thread pool execution with intelligent scaling"
-    ),
-    "robots": "index, follow",
-    "googlebot": "index, follow",
-}
-
 html_context = {
-    "meta_tags": html_meta_tags,
-    "display_github": True,
     "github_user": "Teut2711",
     "github_repo": "adaptive-executor",
-    "github_version": "master",      # No trailing slash
-    "conf_py_path": "docs/",          # Matches folder name
-    "current_version": version,
-    "versions": [
-        ("latest", "/en/latest/"),
-        ("stable", "/en/stable/"),
-        ("0.1", "/en/0.1/"),
-    ],
+    "github_version": "master",
+    "doc_path": "docs",  # pydata uses doc_path (no slashes needed)
 }
 
 autodoc_default_options = {
