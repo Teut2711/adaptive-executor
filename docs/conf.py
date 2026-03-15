@@ -61,7 +61,7 @@ html_baseurl = os.environ.get("PAGES_URL", "https://teut2711.github.io/adaptive-
 
 html_theme_options = {
     "use_edit_page_button": True,
-    "navbar_end": ["version-switcher", "navbar-icon-links"],
+    "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "switcher": {
         "json_url": "_static/switcher.json",
         "version_match": version,

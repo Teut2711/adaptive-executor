@@ -1,4 +1,5 @@
 import tomllib
+import json
 from pathlib import Path
 
 # Read version from pyproject.toml
@@ -18,5 +19,5 @@ switcher = [
 ]
 
 Path("docs/_static").mkdir(parents=True, exist_ok=True)
-Path("docs/_static/switcher.json").write_text(str(switcher))
+Path("docs/_static/switcher.json").write_text(json.dumps(switcher, indent=2))
 print(f"Generated switcher.json for version {short_version}")
