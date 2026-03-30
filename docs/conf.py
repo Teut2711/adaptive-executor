@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.abspath("../src"))
 
+
 def get_version():
     """
     Retrieves the version from installed metadata or pyproject.toml.
@@ -13,6 +14,7 @@ def get_version():
     # 1. Try metadata (works if 'pip install .' was run in CI)
     try:
         from importlib.metadata import PackageNotFoundError, version
+
         return version("adaptive-executor")
     except (ImportError, PackageNotFoundError):
         pass
@@ -36,8 +38,9 @@ def get_version():
     except Exception as e:
         # If we get here, something is fundamentally wrong with the file path
         print(f"Warning: Could not parse pyproject.toml: {e}")
-        
-    return "0.0.0-dev" # Distinctive fallback so you know it's failing
+
+    return "0.0.0-dev"  # Distinctive fallback so you know it's failing
+
 
 project = "Adaptive Executor"
 copyright = "2026, Teut2711"
@@ -57,7 +60,9 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
-html_baseurl = os.environ.get("PAGES_URL", "https://teut2711.github.io/adaptive-executor/")
+html_baseurl = os.environ.get(
+    "PAGES_URL", "https://teut2711.github.io/adaptive-executor/"
+)
 
 html_theme_options = {
     "use_edit_page_button": True,
@@ -67,8 +72,16 @@ html_theme_options = {
         "version_match": version,
     },
     "favicons": [
-        {"rel": "icon", "sizes": "16x16", "href": "https://github.githubassets.com/favicons/favicon.ico"},
-        {"rel": "icon", "sizes": "32x32", "href": "https://github.githubassets.com/favicons/favicon.ico"},
+        {
+            "rel": "icon",
+            "sizes": "16x16",
+            "href": "https://github.githubassets.com/favicons/favicon.ico",
+        },
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "href": "https://github.githubassets.com/favicons/favicon.ico",
+        },
     ],
     "icon_links": [
         {
